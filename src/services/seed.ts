@@ -126,6 +126,8 @@ export function buildSeed(now: Date = new Date()): Database {
         { name: 'Laboratory', limit: 0 },
         { name: 'Outpatient Surgery', limit: 0 },
         { name: 'Rehabilitation', limit: 0 },
+        { name: 'Dental', limit: 0 },
+        { name: 'Vision', limit: 0 },
       ],
       exclusions: ['Cosmetic'],
       health: { copay: 30, coinsurance: 0.2, outOfPocketMax: 6000, deductibleMet: 1200, outOfPocketMet: 1800 },

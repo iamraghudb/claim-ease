@@ -122,3 +122,25 @@ describe('calculatePayable — health', () => {
     expect(p.payable).toBe(4100);
   });
 });
+
+describe('calculatePayable: dental and vision', () => {
+  it('covers them under the Dental and Vision benefits and charges only the coinsurance share, no medical deductible', () => {
+    const policy = { ...healthPolicy, coverages: [...healthPolicy.coverages, { name: 'Dental', limit: 0 }, { name: 'Vision', limit: 0 }] };
+    const base = healthClaim();
+    const claim = {
+      ...base,
+      details: { ...(base.details as Extract<typeof base.details, { kind: 'HEALTH' }>), lines: [{ procedureCode: 'D0120', diagnosisCode: 'Z01.20', units: 1, billedAmount: 48 }, { procedureCode: '92014', diagnosisCode: 'Z01.00', units: 1, billedAmount: 135 }] },
+    };
+    const lines = calculatePayable(claim, policy).lines!;
+    expect(lines.every((l) => l.covered)).toBe(true);
+    expect(lines.map((l) => l.deductible)).toEqual([0, 0]);
+    expect(lines[0].patientResponsibility).toBeCloseTo(48 * 0.2, 2);
+    expect(lines[1].patientResponsibility).toBeCloseTo(135 * 0.2, 2);
+  });
+
+  it('are not covered when the plan has no Dental benefit', () => {
+    const base = healthClaim();
+    const claim = { ...base, details: { ...(base.details as Extract<typeof base.details, { kind: 'HEALTH' }>), lines: [{ procedureCode: 'D1110', diagnosisCode: 'Z01.20', units: 1, billedAmount: 95 }] } };
+    expect(calculatePayable(claim, healthPolicy).lines![0].covered).toBe(false);
+  });
+});

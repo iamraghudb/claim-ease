@@ -73,7 +73,7 @@ export function propertyCoverageFor(damage: PropertyDamageType, policyType: Poli
 export interface ProcedureCode {
   code: string;
   description: string;
-  category: 'OFFICE_VISIT' | 'URGENT_CARE' | 'IMAGING' | 'LAB' | 'SURGERY' | 'THERAPY' | 'COSMETIC';
+  category: 'OFFICE_VISIT' | 'URGENT_CARE' | 'IMAGING' | 'LAB' | 'SURGERY' | 'THERAPY' | 'COSMETIC' | 'DENTAL' | 'VISION';
   /** Simplified in-network fee schedule (allowed amount per unit). */
   allowed: number;
   requiresMedicalRecord?: boolean;
@@ -90,6 +90,18 @@ export const PROCEDURES: ProcedureCode[] = [
   { code: '29881', description: 'Knee arthroscopy with meniscectomy', category: 'SURGERY', allowed: 4200, requiresMedicalRecord: true },
   { code: '97110', description: 'Physical therapy, therapeutic exercise (15 min)', category: 'THERAPY', allowed: 42 },
   { code: '15780', description: 'Dermabrasion (cosmetic)', category: 'COSMETIC', allowed: 0 },
+  // Dental (CDT codes). Simplified in-network fees.
+  { code: 'D0120', description: 'Dental: periodic oral evaluation', category: 'DENTAL', allowed: 48 },
+  { code: 'D0274', description: 'Dental: bitewing X-rays, four films', category: 'DENTAL', allowed: 62 },
+  { code: 'D1110', description: 'Dental: adult cleaning (prophylaxis)', category: 'DENTAL', allowed: 95 },
+  { code: 'D2391', description: 'Dental: resin filling, one surface, back tooth', category: 'DENTAL', allowed: 175 },
+  { code: 'D2740', description: 'Dental: porcelain crown', category: 'DENTAL', allowed: 1050 },
+  { code: 'D3330', description: 'Dental: root canal, molar', category: 'DENTAL', allowed: 980, requiresMedicalRecord: true },
+  // Vision. Simplified in-network fees.
+  { code: '92014', description: 'Vision: comprehensive eye exam, established patient', category: 'VISION', allowed: 135 },
+  { code: '92015', description: 'Vision: refraction (glasses prescription)', category: 'VISION', allowed: 45 },
+  { code: 'V2020', description: 'Vision: eyeglass frames', category: 'VISION', allowed: 150 },
+  { code: 'V2100', description: 'Vision: single-vision lens, pair', category: 'VISION', allowed: 120 },
 ];
 
 export const DIAGNOSES: { code: string; description: string }[] = [
@@ -100,6 +112,11 @@ export const DIAGNOSES: { code: string; description: string }[] = [
   { code: 'E11.9', description: 'Type 2 diabetes without complications' },
   { code: 'Z00.00', description: 'General adult exam' },
   { code: 'L90.5', description: 'Scar conditions of skin' },
+  { code: 'Z01.20', description: 'Dental exam and cleaning, routine' },
+  { code: 'K02.9', description: 'Dental caries (cavity), unspecified' },
+  { code: 'K04.01', description: 'Reversible pulpitis (painful tooth nerve)' },
+  { code: 'Z01.00', description: 'Eye exam, routine' },
+  { code: 'H52.13', description: 'Myopia (nearsightedness), both eyes' },
 ];
 
 export const PROCEDURE_CATEGORY_TO_COVERAGE: Record<ProcedureCode['category'], string> = {
@@ -110,6 +127,8 @@ export const PROCEDURE_CATEGORY_TO_COVERAGE: Record<ProcedureCode['category'], s
   SURGERY: 'Outpatient Surgery',
   THERAPY: 'Rehabilitation',
   COSMETIC: 'Cosmetic',
+  DENTAL: 'Dental',
+  VISION: 'Vision',
 };
 
 export function findProcedure(code: string): ProcedureCode | undefined {

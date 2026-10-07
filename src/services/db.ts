@@ -7,10 +7,22 @@ import { buildSeed, type Database } from './seed';
 const STORAGE_KEY = 'claimease.db.v1';
 let db: Database | null = null;
 
+/**
+ * Data saved by an older version of the app is brought up to date here, so a browser that already has claims does not
+ * need a reset. Today: health plans gain the Dental and Vision benefits (added after the first release).
+ */
+export function upgrade(db: Database): Database {
+  for (const p of db.policies) {
+    if (p.type !== 'HEALTH') continue;
+    for (const name of ['Dental', 'Vision']) if (!p.coverages.some((c) => c.name === name)) p.coverages.push({ name, limit: 0 });
+  }
+  return db;
+}
+
 function load(): Database {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as Database;
+    if (raw) return upgrade(JSON.parse(raw) as Database);
   } catch {
     /* storage unavailable or corrupt — fall back to seed */
   }

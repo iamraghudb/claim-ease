@@ -275,6 +275,9 @@ function calculateHealthPayable(claim: ClaimLike, policy: Policy): PayableBreakd
       // Copay applies once per claim for visit codes; not subject to deductible.
       copay = copayUsed ? 0 : Math.min(benefits.copay, allowed);
       copayUsed = true;
+    } else if (proc.category === 'DENTAL' || proc.category === 'VISION') {
+      // Dental and vision are separate benefits: no medical deductible, only the coinsurance share.
+      coinsurance = round2(allowed * benefits.coinsurance);
     } else {
       deductible = Math.min(deductibleRemaining, allowed);
       deductibleRemaining -= deductible;
