@@ -10,6 +10,7 @@ import {
   Gauge,
   House,
   Inbox,
+  LifeBuoy,
   Menu,
   Play,
   Settings,
@@ -259,6 +260,14 @@ export function Layout() {
                 <span className="hidden sm:inline">{fileLabel}</span>
               </Link>
             )}
+            <Link
+              to="/glossary"
+              aria-label="Help and glossary"
+              className="inline-flex items-center gap-2 rounded-xl p-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            >
+              <LifeBuoy className="h-5 w-5" aria-hidden />
+              <span className="hidden lg:inline">Help</span>
+            </Link>
             <NotificationBell />
             <PersonaMenu />
           </div>
@@ -280,6 +289,9 @@ export function Layout() {
             ))}
             <NavLink to="/notifications" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               <Bell className="h-4 w-4" aria-hidden /> Notifications
+            </NavLink>
+            <NavLink to="/glossary" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              <LifeBuoy className="h-4 w-4" aria-hidden /> Help and glossary
             </NavLink>
           </nav>
         )}
