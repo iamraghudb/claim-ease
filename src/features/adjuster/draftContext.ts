@@ -16,13 +16,20 @@ export const OUTCOME_LABELS: Record<DecisionOutcome, string> = {
 const cents = (n: number) => Math.round(n * 100) / 100;
 
 /** The decision the adjuster has set up in the form, as a request for an explanation draft. */
-export function decisionDraftRequest(input: { claim: Claim; rules: RulesResult; outcome: DecisionOutcome; approvedAmount: number; reasonCode?: string }): DraftRequest {
+export function decisionDraftRequest(input: { claim: Claim; rules: RulesResult; outcome: DecisionOutcome; approvedAmount: number; reasonCode?: string; notes?: string }): DraftRequest {
   const { claim, rules, outcome, reasonCode } = input;
   const denied = outcome === 'DENIED';
   const reason = denied && reasonCode ? DENIAL_REASON_CODES.find((c) => c.code === reasonCode)?.label : undefined;
-  const checks = buildStaffContext(claim, rules)
-    .checks.filter((c) => c.status !== 'PASS')
-    .map((c) => ({ label: c.label, result: c.status === 'FAIL' ? 'failed' : 'needs attention', explanation: c.explanation }));
+  const staff = buildStaffContext(claim, rules);
+  const checks = staff.checks.filter((c) => c.status !== 'PASS').map((c) => ({ label: c.label, result: c.status === 'FAIL' ? 'failed' : 'needs attention', explanation: c.explanation }));
+  // What stood out in review (missing records, a possible duplicate...). A denial letter has to say why, so these
+  // go in. Fraud signals stay out unless they ARE the stated reason: a duplicate claim is only cited for D06.
+  const findings = staff.triggers
+    .filter((_, i) => {
+      const code = rules.triggers[i]?.code;
+      return !code?.startsWith('FRAUD_') || (code === 'FRAUD_DUPLICATE' && reasonCode === 'D06');
+    })
+    .map((t) => ({ finding: t.label, detail: t.explanation }));
   return {
     kind: 'decision_explanation',
     context: {
@@ -33,7 +40,9 @@ export function decisionDraftRequest(input: { claim: Claim; rules: RulesResult; 
       claimType: CLAIM_TYPE_LABELS[claim.claimType],
       ...(reason && { denialReason: reason, reason }),
       checks,
+      ...(findings.length && { reviewFindings: findings }),
     },
+    ...(input.notes?.trim() && { notes: input.notes.trim().slice(0, 1500) }),
   };
 }
 

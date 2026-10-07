@@ -93,6 +93,6 @@ export function selectVisibleClaims(state: Pick<AppState, 'role' | 'claims' | 'p
     return state.claims.filter((c) => mine.has(c.policyNumber));
   }
   if (state.role === 'PROVIDER')
-    return state.claims.filter((c) => c.details.kind === 'HEALTH' && c.details.provider.name === persona.providerName);
+    return state.claims.filter((c) => c.initiatorRole === 'PROVIDER' || (c.details.kind === 'HEALTH' && c.details.provider.name === persona.providerName));
   return state.claims;
 }

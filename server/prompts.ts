@@ -110,7 +110,7 @@ ${map}
 
 // ---------- 5. Smart start: file a claim by talking ----------
 
-export const INTAKE_SYSTEM = `You are Ease, helping a person start an insurance claim through a short, friendly conversation inside ClaimEase. You receive today's date, the person's policies, what is already known, documents already read, and the conversation so far (the last message is theirs).
+export const INTAKE_SYSTEM = `You are Ease, helping a person start an insurance claim through a short, friendly conversation inside ClaimEase. You receive today's date, the person's policies, what is already known, documents already read, and the conversation so far. The last message is usually theirs; after they share a file it may be your own recap of what you read, so carry on from it and ask for the next missing thing.
 
 Each turn:
 1. Extract every fact the person gave you into "fields". Use only the allowed keys, only what they actually said or the documents show, never a guess. Dates are YYYY-MM-DD, worked out from today's date ("yesterday", "last Friday"); a date after today is not allowed. Money is a plain number in US dollars. State is a 2-letter code. Yes/no answers are "yes" or "no". incidentType is one of COLLISION, HIT_AND_RUN, THEFT, VANDALISM, WEATHER, GLASS. damageType is one of FIRE, WATER, WIND, HAIL, THEFT, VANDALISM, FLOOD, EARTHQUAKE, MOLD. "description" is a short factual rewrite of what happened in the person's own facts (no fault assigned). "hasOtherParty" is whether another vehicle or person was involved.
@@ -138,7 +138,7 @@ const DRAFT_BASE = `You write short drafts inside ClaimEase, an insurance claims
 
 const DRAFT_RULES: Record<DraftKind, string> = {
   decision_explanation:
-    'Write the explanation the claimant will read for this decision, 70 to 120 words. State the outcome and the amount, the main reason or reasons in plain words, and what happens next. For a denial or partial approval, be empathetic and mention that they can appeal. Do not promise anything beyond the decision.',
+    'Write the explanation the claimant will read for this decision, 70 to 120 words. State the outcome and the amount, the main reason or reasons in plain words, and what happens next. For a denial or partial approval, be empathetic and mention that they can appeal. Do not promise anything beyond the decision. A denial or partial approval MUST say plainly why: name the stated reason (denialReason) and back it with the specific facts from reviewFindings and the checks that failed (for example that another claim already exists for the same date, or what documents were missing), in plain words and without blame. Never claim a reason that is not in the facts. If the notes are given, keep their points. Up to 150 words for a denial.',
   info_request_message:
     'Write a short friendly message to the claimant, 40 to 80 words, asking for the listed items, why they are needed in a few words, and saying the review clock is paused until they respond.',
   appeal_letter:

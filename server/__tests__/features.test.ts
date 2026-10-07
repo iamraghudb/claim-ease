@@ -105,6 +105,12 @@ describe('intake (Smart start)', () => {
     expect(text).toContain('Person: I was rear-ended yesterday');
   });
 
+  it('accepts a conversation that ends with Ease\'s recap of a file it just read', async () => {
+    const { handlers } = fake({ reply: 'Was anyone hurt?', fields: [], quickReplies: [], done: false, stillNeeded: [] });
+    const r = await handlers.intake(intakeBody([{ role: 'user', text: 'I\'ve added police.png' }, { role: 'assistant', text: 'I read your police report. I filled in 10 things.' }]));
+    expect(r.reply).toBe('Was anyone hurt?');
+  });
+
   it('keeps only valid, well-formed fields', async () => {
     const { handlers } = fake({
       reply: 'Thanks.',

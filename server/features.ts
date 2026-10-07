@@ -122,7 +122,8 @@ export function parseIntakeRequest(body: unknown): IntakeRequest {
     .map((d) => ({ fileName: oneLine(d.fileName, 120), documentType: oneLine(d.documentType, 40), summary: oneLine(d.summary, 300) }));
 
   const conversation = parseHistory(body.conversation, 20);
-  if (conversation.length === 0 || conversation[conversation.length - 1].role !== 'user') throw bad('The conversation must end with the person\'s message.');
+  // The last turn may be Ease's own (it just read a file and said what it found), so only require that the person has spoken.
+  if (!conversation.some((t) => t.role === 'user')) throw bad('The conversation needs a message from the person.');
   return { role, today, policies, known, documents, conversation };
 }
 

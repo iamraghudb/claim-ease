@@ -105,7 +105,7 @@ function parseDate(text: string, today: string): string | undefined {
 const yesNo = (t: string) => (/\b(yes|yeah|yep|y)\b/i.test(t) ? 'yes' : /\b(no|nope|nobody|none|n)\b/i.test(t) ? 'no' : undefined);
 
 export function demoIntake(req: IntakeRequest): IntakeResult {
-  const last = req.conversation[req.conversation.length - 1].text;
+  const last = [...req.conversation].reverse().find((t) => t.role === 'user')?.text ?? '';
   const known: Record<string, string> = { ...req.known };
   const fields: IntakeField[] = [];
   const set = (key: IntakeKey, value: string | undefined) => {
@@ -202,7 +202,8 @@ export function demoDraft(req: DraftRequest): DraftResult {
   switch (req.kind) {
     case 'decision_explanation': {
       const outcome = str(c.outcome, 'decided').replace('_', ' ').toLowerCase();
-      return { source: 'demo', text: `Your claim has been ${outcome}${c.approvedAmount !== undefined ? ` for ${usd(c.approvedAmount)}` : ''}. ${str(c.reason, 'We reviewed your policy, the documents you sent and the amount claimed.')} If you disagree with this decision you can file an appeal from your claim page and a different examiner will take another look.` };
+      const why = [str(c.denialReason, ''), ...(Array.isArray(c.reviewFindings) ? (c.reviewFindings as { detail?: unknown }[]).map((f) => str(f.detail, '')) : [])].filter(Boolean).join('. ');
+      return { source: 'demo', text: `Your claim has been ${outcome}${c.approvedAmount !== undefined ? ` for ${usd(c.approvedAmount)}` : ''}. ${why ? `The reason: ${why}.` : str(c.reason, 'We reviewed your policy, the documents you sent and the amount claimed.')} If you disagree with this decision you can file an appeal from your claim page and a different examiner will take another look.` };
     }
     case 'info_request_message': {
       const items = Array.isArray(c.items) ? (c.items as unknown[]).map((i) => String(i)).join(', ') : 'a few more items';

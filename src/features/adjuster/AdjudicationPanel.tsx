@@ -177,7 +177,9 @@ export function AdjudicationPanel({ claim, rules, onRequestInfo, embedded, sugge
               {outcome && (
                 <AiDraftAssist
                   key={`${outcome}|${reasonCode}`}
-                  request={() => decisionDraftRequest({ claim, rules, outcome, approvedAmount: amountNum, reasonCode })}
+                  request={() => decisionDraftRequest({ claim, rules, outcome, approvedAmount: amountNum, reasonCode, notes: explanation })}
+                  disabled={outcome === 'DENIED' && !reasonCode}
+                  hint={outcome === 'DENIED' && !reasonCode ? 'Pick a denial reason code first, so the draft can say why.' : undefined}
                   current={explanation}
                   onUse={(text) => {
                     setExplanation(text);
