@@ -11,15 +11,15 @@ export function cx(...classes: (string | false | null | undefined)[]) {
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'ai';
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800 disabled:bg-brand-600/40 disabled:shadow-none',
+  primary: 'bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-[0_1px_0_0_rgb(255_255_255/0.25)_inset,0_6px_16px_-6px_rgb(13_148_136/0.6)] hover:from-brand-600 hover:to-brand-700 active:from-brand-700 active:to-brand-800 disabled:from-brand-600/40 disabled:to-brand-600/40 disabled:shadow-none',
   secondary: 'bg-white text-slate-800 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 disabled:text-slate-400 disabled:shadow-none',
   ghost: 'text-slate-700 hover:bg-slate-100 disabled:text-slate-400',
   danger: 'bg-red-600 text-white shadow-sm hover:bg-red-700 disabled:bg-red-600/40 disabled:shadow-none',
   success: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 disabled:bg-emerald-600/40 disabled:shadow-none',
-  ai: 'bg-ai-600 text-white shadow-sm hover:bg-ai-700 active:bg-ai-800 disabled:bg-ai-600/40 disabled:shadow-none',
+  ai: 'bg-gradient-to-b from-ai-500 to-ai-600 text-white shadow-[0_1px_0_0_rgb(255_255_255/0.25)_inset,0_6px_16px_-6px_rgb(99_102_241/0.6)] hover:from-ai-600 hover:to-ai-700 active:from-ai-700 active:to-ai-800 disabled:from-ai-600/40 disabled:to-ai-600/40 disabled:shadow-none',
 };
 
-const BUTTON_BASE = 'inline-flex items-center justify-center gap-2 font-semibold transition-colors disabled:cursor-not-allowed';
+const BUTTON_BASE = 'inline-flex items-center justify-center gap-2 font-semibold transition duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100';
 const SIZES = { sm: 'rounded-lg px-3 py-1.5 text-xs', md: 'rounded-xl px-4 py-2.5 text-sm' } as const;
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -63,7 +63,7 @@ export function Card({ title, icon: Icon, actions, children, className, bodyClas
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-3.5">
           <h2 className="flex items-center gap-2.5 text-sm font-semibold text-slate-900">
             {Icon && (
-              <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-brand-50 to-ai-50 text-brand-600 ring-1 ring-brand-100">
                 <Icon className="h-4 w-4" aria-hidden />
               </span>
             )}
@@ -231,23 +231,23 @@ export function Avatar({ name, tone = 'teal', size = 'md' }: { name: string; ton
 /** A headline number with a label: used for dashboards and "at a glance" rows. */
 export function StatCard({ label, value, hint, icon: Icon, tone = 'brand' }: { label: string; value: ReactNode; hint?: ReactNode; icon?: LucideIcon; tone?: 'brand' | 'amber' | 'emerald' | 'ai' | 'red' }) {
   const tones = {
-    brand: 'bg-brand-50 text-brand-600',
-    amber: 'bg-amber-50 text-amber-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    ai: 'bg-ai-50 text-ai-600',
-    red: 'bg-red-50 text-red-600',
+    brand: 'bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-glow',
+    amber: 'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-[0_10px_30px_-10px_rgb(245_158_11/0.6)]',
+    emerald: 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-[0_10px_30px_-10px_rgb(16_185_129/0.6)]',
+    ai: 'bg-gradient-to-br from-ai-400 to-ai-600 text-white shadow-glow-ai',
+    red: 'bg-gradient-to-br from-rose-400 to-red-600 text-white shadow-[0_10px_30px_-10px_rgb(225_29_72/0.6)]',
   };
   return (
-    <div className="card p-5">
+    <div className="card card-hover p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium text-slate-500">{label}</p>
         {Icon && (
-          <span className={cx('grid h-9 w-9 place-items-center rounded-xl', tones[tone])}>
-            <Icon className="h-[18px] w-[18px]" aria-hidden />
+          <span className={cx('grid h-10 w-10 place-items-center rounded-xl', tones[tone])}>
+            <Icon className="h-5 w-5" aria-hidden />
           </span>
         )}
       </div>
-      <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
+      <p className="mt-3 text-3xl font-extrabold tabular-nums tracking-tight text-slate-900">{value}</p>
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </div>
   );
@@ -357,7 +357,7 @@ export function PageHeader({ title, subtitle, actions, back }: { title: ReactNod
       {back && <div className="mb-3">{back}</div>}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{title}</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{title}</h1>
           {subtitle && <div className="mt-1.5 text-sm text-slate-600 sm:text-base">{subtitle}</div>}
         </div>
         {actions && <div className="no-print flex flex-wrap items-center gap-2">{actions}</div>}

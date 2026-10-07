@@ -32,6 +32,8 @@
   --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -10px rgb(15 23 42 / 0.1);
   --shadow-lift: 0 2px 4px rgb(15 23 42 / 0.05), 0 16px 32px -12px rgb(15 23 42 / 0.16);
   --shadow-pop: 0 16px 48px -12px rgb(15 23 42 / 0.3);
+  --shadow-glow: 0 10px 30px -10px rgb(13 148 136 / 0.55);
+  --shadow-glow-ai: 0 10px 30px -10px rgb(99 102 241 / 0.55);
 }
 
 @layer base {
@@ -42,6 +44,12 @@
   body {
     @apply bg-canvas text-slate-900 antialiased;
     font-feature-settings: 'cv11', 'ss01';
+    /* A soft aurora behind everything: teal top-right, indigo left. Fixed, so it never scrolls with the page. */
+    background-image:
+      radial-gradient(60rem 40rem at 105% -10%, rgb(204 251 241 / 0.7), transparent 60%),
+      radial-gradient(50rem 36rem at -10% 20%, rgb(224 231 255 / 0.65), transparent 60%),
+      radial-gradient(40rem 30rem at 60% 110%, rgb(240 253 250 / 0.9), transparent 60%);
+    background-attachment: fixed;
   }
   h1,
   h2,
@@ -58,7 +66,7 @@
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-slate-200/80 bg-white shadow-soft;
+    @apply rounded-2xl border border-white/70 bg-white/90 shadow-soft ring-1 ring-slate-200/70 backdrop-blur-sm;
   }
   .card-hover {
     @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-lift;
@@ -68,6 +76,18 @@
   }
   .label {
     @apply mb-1.5 block text-sm font-semibold text-slate-700;
+  }
+  /* Brand gradient on text: the one place the teal-to-indigo blend shows up. */
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-600 to-ai-600 bg-clip-text text-transparent;
+  }
+  /* A frosted panel for things that float over colour. */
+  .glass {
+    @apply border border-white/60 bg-white/70 shadow-soft backdrop-blur-md;
+  }
+  /* The big gradient banner at the top of a home page. */
+  .hero-banner {
+    @apply relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-ai-700 text-white shadow-lift;
   }
   .eyebrow {
     @apply text-xs font-semibold uppercase tracking-wider text-slate-500;

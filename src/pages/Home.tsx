@@ -8,6 +8,7 @@ import { ClaimTypeIcon, StatusBadge } from '../components/badges';
 import { ButtonLink, Card, EmptyState, StatCard } from '../components/ui';
 import { formatUSD } from '../domain/rulesEngine';
 import { NotificationList } from '../features/claims/NotificationList';
+import ProviderHome from '../features/provider/ProviderHome';
 
 /** The three things that happen to a claim. Shown as "How it works", and as the first-claim guide for new users. */
 const STEPS = [
@@ -104,7 +105,13 @@ function HeroPreview() {
   );
 }
 
+/** A doctor's office gets a practice dashboard; everyone else gets the patient view. */
 export default function Home() {
+  const role = useAppStore((s) => s.role);
+  return role === 'PROVIDER' ? <ProviderHome /> : <PatientHome />;
+}
+
+function PatientHome() {
   const state = useAppStore();
   if (state.role === 'ADJUSTER') return <Navigate to="/queue" replace />;
   if (state.role === 'ADMIN') return <Navigate to="/admin" replace />;

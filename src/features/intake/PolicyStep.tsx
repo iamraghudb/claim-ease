@@ -8,6 +8,9 @@ import { GlossaryTerm } from '../../components/GlossaryTerm';
 import { formatDate, todayIso } from '../../components/format';
 import { Alert, Button, DescriptionList, Field, EstimatedToggle } from '../../components/ui';
 import { applyPolicy, toggleEstimated, type IntakeDraft } from './draft';
+import { selectVisibleClaims, useAppStore } from '../../store/appStore';
+import { Avatar } from '../../components/ui';
+import { recentPatients } from '../provider/practice';
 
 const SAMPLE_POLICIES = [
   { number: 'POL-100245', label: 'Auto' },
@@ -19,6 +22,8 @@ const SAMPLE_POLICIES = [
 export function PolicyStep({ draft, setDraft, role }: { draft: IntakeDraft; setDraft: (d: IntakeDraft) => void; role: Role }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const store = useAppStore();
+  const patients = role === 'PROVIDER' ? recentPatients(selectVisibleClaims(store), 4) : [];
 
   async function lookup() {
     setError('');
@@ -52,6 +57,40 @@ export function PolicyStep({ draft, setDraft, role }: { draft: IntakeDraft; setD
             : 'Your policy number is on your ID card or declarations page. We check that it was active on the day it happened.'}
         </p>
       </div>
+      {role === 'PROVIDER' && patients.length > 0 && (
+        <div>
+          <p className="eyebrow mb-2">Billing for a patient you have seen before?</p>
+          <div className="flex flex-wrap gap-2">
+            {patients.map((p) => {
+              const picked = draft.health.memberId === p.memberId && draft.policyNumber === p.policyNumber;
+              return (
+                <button
+                  key={p.memberId}
+                  type="button"
+                  aria-pressed={picked}
+                  onClick={() =>
+                    setDraft({
+                      ...draft,
+                      policyNumber: p.policyNumber,
+                      policy: undefined,
+                      dateOfLoss: draft.dateOfLoss || todayIso(),
+                      health: { ...draft.health, memberId: p.memberId, patientName: p.patientName, patientDob: p.patientDob },
+                    })
+                  }
+                  className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-left shadow-sm ring-1 transition hover:-translate-y-0.5 ${picked ? 'bg-brand-50 ring-brand-400' : 'bg-white ring-slate-200 hover:ring-brand-300'}`}
+                >
+                  <Avatar name={p.patientName} tone="teal" size="sm" />
+                  <span className="leading-tight">
+                    <span className="block text-sm font-bold text-slate-900">{p.patientName}</span>
+                    <span className="block text-xs text-slate-500">{p.memberId}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <form
         className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_210px_auto] sm:items-start"
         onSubmit={(e) => {

@@ -12,6 +12,7 @@ import { formatUSD } from '../../domain/rulesEngine';
 import type { AutoDetails, HealthDetails, OtherParty, PropertyDetails } from '../../domain/types';
 import { Button, EstimatedToggle, Field, Pill } from '../../components/ui';
 import { draftAmount, toggleEstimated, type IntakeDraft } from './draft';
+import { templateLines, VISIT_TEMPLATES } from '../provider/practice';
 
 export type DetailErrors = Partial<Record<string, string>>;
 
@@ -364,6 +365,25 @@ function HealthFields({ draft, setDraft, errors }: Props) {
 
       <fieldset className="pt-2">
         <legend className="mb-3 text-base font-bold text-slate-900">Service lines (simplified CPT / ICD-10)</legend>
+        {h.lines.length === 1 && !h.lines[0].procedureCode && (
+          <div className="mb-4 rounded-2xl border border-ai-100 bg-gradient-to-br from-ai-50/70 to-white p-4">
+            <p className="text-sm font-semibold text-slate-900">Start from a common visit</p>
+            <p className="mt-0.5 text-xs text-slate-600">One tap fills in the codes and the usual fees. You can change anything.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {VISIT_TEMPLATES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => set({ serviceType: t.serviceType, placeOfService: t.placeOfService, lines: templateLines(t) })}
+                  className="rounded-xl bg-white px-3 py-2 text-left text-xs font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:ring-ai-300 hover:shadow-lift"
+                >
+                  <span className="block text-sm font-bold text-ai-800">{t.label}</span>
+                  <span className="block font-normal text-slate-500">{t.hint}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="space-y-3">
           {h.lines.map((l, i) => (
             <div key={i} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-[2fr_2fr_80px_120px_auto] sm:items-end">
