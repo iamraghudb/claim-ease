@@ -9,9 +9,11 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ai:check": "vite-node scripts/aiCheck.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.27.0",
     "lucide-react": "^1.52.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -29,5 +31,6 @@
     "typescript": "~5.6",
     "vite": "^6.4.3",
     "vitest": "^3.2.7"
-  }
+  },
+  "description": "ClaimEase: AI-powered claims simplification. AI reads bills, estimates and receipts, fills in the claim, flags what is missing and explains claim status in plain English (Health, Auto and Property)."
 }

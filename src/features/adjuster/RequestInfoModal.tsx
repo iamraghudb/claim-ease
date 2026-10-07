@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { FileText, MessageSquareText, Plus } from 'lucide-react';
 import { DELAY_REASON_LABELS, DOCUMENT_CATEGORY_LABELS, INFO_REQUEST_TEMPLATES } from '../../domain/catalog';
 import { missingRequiredDocuments } from '../../domain/requirements';
 import type { Claim, DelayReason, DocumentCategory } from '../../domain/types';
 import { claimService } from '../../services';
 import { useAppStore } from '../../store/appStore';
 import { useClaimAction } from '../../store/useClaimAction';
-import { Button, Field, Modal } from '../../components/ui';
+import { Button, cx, Field, Modal, Pill } from '../../components/ui';
+import { AiDraftAssist } from './AiDraft';
+import { infoRequestDraftRequest } from './draftContext';
 
 interface Item {
   label: string;
@@ -23,13 +25,14 @@ export function RequestInfoModal({ claim, open, onClose }: { claim: Claim; open:
   const [items, setItems] = useState<Item[]>(initial);
   const [custom, setCustom] = useState('');
   const [message, setMessage] = useState('');
+  const starter = `Hi ${claim.claimantName.split(' ')[0]}, to keep your claim moving we need the items below. You can upload them from your claim page.`;
 
   useEffect(() => {
     if (open) {
       setItems(initial);
-      setMessage(`Hi ${claim.claimantName.split(' ')[0]}, to keep your claim moving we need the items below. You can upload them from your claim page.`);
+      setMessage(starter);
     }
-  }, [open, initial, claim.claimantName]);
+  }, [open, initial, starter]);
 
   const selected = items.filter((i) => i.checked);
 
@@ -37,7 +40,7 @@ export function RequestInfoModal({ claim, open, onClose }: { claim: Claim; open:
     const ok = await run(
       'request',
       () => claimService.requestInformation(claim.claimNumber, selected.map(({ label, category, reason }) => ({ label, category, reason })), message, actor),
-      'Information requested — claimant notified',
+      'Information requested. Claimant notified',
     );
     if (ok) onClose();
   }
@@ -59,30 +62,51 @@ export function RequestInfoModal({ claim, open, onClose }: { claim: Claim; open:
         </>
       }
     >
+      <p className="mb-5 text-sm text-slate-600">
+        Choose what you still need from {claim.claimantName}. They are notified straight away and the SLA clock pauses until they respond.
+      </p>
+
       <fieldset>
-        <legend className="label">Missing items</legend>
-        <ul className="space-y-1.5">
-          {items.map((i, idx) => (
-            <li key={`${i.label}-${idx}`}>
-              <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-200 p-2.5 text-sm hover:bg-slate-50">
-                <input type="checkbox" className="mt-0.5 h-4 w-4 accent-brand-600" checked={i.checked} onChange={(e) => setItems(items.map((x, j) => (j === idx ? { ...x, checked: e.target.checked } : x)))} />
-                <span className="flex-1">
-                  <span className="font-medium text-slate-800">{i.label}</span>
-                  <span className="block text-xs text-slate-500">
-                    {i.category ? `Document: ${DOCUMENT_CATEGORY_LABELS[i.category]}` : 'Written answer'} · {DELAY_REASON_LABELS[i.reason]}
-                    {i.category && missing.has(i.category) && <strong className="ml-1 text-red-600">· flagged missing by rules engine</strong>}
+        <legend className="mb-2 flex w-full items-center justify-between gap-2">
+          <span className="text-sm font-semibold text-slate-700">Missing items</span>
+          <span className="text-xs font-medium text-slate-500" aria-live="polite">
+            {selected.length} of {items.length} selected
+          </span>
+        </legend>
+        <ul className="space-y-2">
+          {items.map((i, idx) => {
+            const flagged = !!i.category && missing.has(i.category);
+            return (
+              <li key={`${i.label}-${idx}`}>
+                <label
+                  className={cx(
+                    'flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-sm transition-colors',
+                    i.checked ? 'border-brand-300 bg-brand-50/60' : 'border-slate-200 hover:bg-slate-50',
+                  )}
+                >
+                  <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600" checked={i.checked} onChange={(e) => setItems(items.map((x, j) => (j === idx ? { ...x, checked: e.target.checked } : x)))} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="font-semibold text-slate-900">{i.label}</span>
+                      {flagged && <Pill tone="red">Flagged missing</Pill>}
+                    </span>
+                    <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-slate-500">
+                      {i.category ? <FileText className="h-3 w-3" aria-hidden /> : <MessageSquareText className="h-3 w-3" aria-hidden />}
+                      {i.category ? `Document: ${DOCUMENT_CATEGORY_LABELS[i.category]}` : 'Written answer'} · {DELAY_REASON_LABELS[i.reason]}
+                    </span>
                   </span>
-                </span>
-              </label>
-            </li>
-          ))}
+                </label>
+              </li>
+            );
+          })}
         </ul>
       </fieldset>
+
       <div className="mt-3 flex gap-2">
         <label htmlFor="custom-item" className="sr-only">
           Custom item
         </label>
-        <input id="custom-item" className="input" placeholder="Add a custom item…" value={custom} onChange={(e) => setCustom(e.target.value)} />
+        <input id="custom-item" className="input" placeholder="Add another item…" value={custom} onChange={(e) => setCustom(e.target.value)} />
         <Button
           variant="secondary"
           icon={Plus}
@@ -95,9 +119,18 @@ export function RequestInfoModal({ claim, open, onClose }: { claim: Claim; open:
           Add
         </Button>
       </div>
-      <div className="mt-4">
+
+      <div className="mt-5">
         <Field label="Message to claimant" htmlFor="ir-message">
           <textarea id="ir-message" rows={3} className="input" value={message} onChange={(e) => setMessage(e.target.value)} />
+          <AiDraftAssist
+            label="Draft the message with Ease"
+            request={() => infoRequestDraftRequest(selected.map((i) => i.label))}
+            current={message === starter ? '' : message}
+            onUse={setMessage}
+            disabled={!selected.length}
+            hint={selected.length ? undefined : 'Tick at least one item first.'}
+          />
         </Field>
       </div>
     </Modal>

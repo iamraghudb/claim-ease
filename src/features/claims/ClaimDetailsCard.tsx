@@ -61,15 +61,15 @@ export function ClaimDetailsCard({ claim }: { claim: Claim }) {
     <Card title="Claim details" icon={FileText}>
       <DescriptionList items={[...common, ...specific]} />
       <div className="mt-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{claim.claimType === 'HEALTH' ? 'Clinical summary' : 'What happened'}</p>
-        <p className="mt-1 whitespace-pre-line text-sm text-slate-800">{claim.incidentDescription}</p>
+        <p className="eyebrow">{claim.claimType === 'HEALTH' ? 'Clinical summary' : 'What happened'}</p>
+        <p className="mt-1.5 whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{claim.incidentDescription}</p>
       </div>
       {d.kind === 'HEALTH' && (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[480px] text-sm">
             <caption className="sr-only">Service lines</caption>
             <thead>
-              <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                 <th className="py-2 pr-3 font-medium">Procedure</th>
                 <th className="py-2 pr-3 font-medium">Diagnosis</th>
                 <th className="py-2 pr-3 text-right font-medium">Units</th>

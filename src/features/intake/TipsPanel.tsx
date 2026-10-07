@@ -8,7 +8,7 @@ export const FASTER_CLAIM_TIPS = [
   { title: 'Keep receipts and estimates', body: 'Receipts for repairs, temporary housing, or tarps can be reimbursed when covered.' },
   { title: 'Respond promptly', body: 'If we ask for something, replying quickly keeps your claim moving.' },
   { title: 'Keep a log of contacts', body: 'Note who you spoke to, when, and what was said. Use the communication log on your claim.' },
-  { title: 'Mark estimates clearly', body: 'Not sure of an exact amount or time? Tick "Estimated / unsure" instead of guessing.' },
+  { title: 'Mark estimates clearly', body: "Not sure of an exact amount or time? Tick \"I'm not sure\" instead of guessing." },
   { title: 'Keep copies', body: 'Save copies of everything you send, and of your policy declarations page.' },
 ];
 

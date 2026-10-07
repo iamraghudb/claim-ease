@@ -1,5 +1,5 @@
 import { useRef, useState, type DragEvent } from 'react';
-import { FileText, Image as ImageIcon, Paperclip, Trash2, Upload, Video } from 'lucide-react';
+import { CloudUpload, FileText, Image as ImageIcon, Paperclip, Trash2, Video } from 'lucide-react';
 import { DOCUMENT_CATEGORY_LABELS } from '../domain/catalog';
 import type { ClaimDocument, DocumentCategory, InfoRequestItem } from '../domain/types';
 import type { NewDocumentInput } from '../services';
@@ -34,11 +34,13 @@ function readPreview(file: File): Promise<string | undefined> {
 
 export interface PendingDoc extends NewDocumentInput {
   key: string;
+  /** The real file, kept in memory so the AI scan can read it. Never saved with the claim (see toDocInputs). */
+  file?: File;
 }
 
 /**
- * Simulated uploader: captures file metadata and an image preview only.
- * Swap `onAdd` consumers to a signed-URL upload when real storage exists.
+ * Drop zone and file list. Captures file metadata and an image preview only;
+ * swap `onChange` consumers to a signed-URL upload when real storage exists.
  */
 export function FileUploader({
   value,
@@ -73,6 +75,7 @@ export function FileUploader({
         mimeType: f.type || 'application/octet-stream',
         previewUrl: await readPreview(f),
         satisfiesRequestItemId: match?.id,
+        file: f,
       });
     }
     onChange([...value, ...added]);
@@ -94,19 +97,21 @@ export function FileUploader({
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
         className={cx(
-          'flex flex-col items-center justify-center rounded-xl border-2 border-dashed text-center transition-colors',
-          compact ? 'px-4 py-5' : 'px-6 py-8',
-          drag ? 'border-brand-500 bg-brand-50' : 'border-slate-300 bg-slate-50',
+          'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center transition-colors',
+          compact ? 'px-4 py-6' : 'px-6 py-10',
+          drag ? 'border-brand-500 bg-brand-50' : 'border-slate-300 bg-slate-50/70 hover:border-brand-300 hover:bg-brand-50/40',
         )}
       >
-        <Upload className="mb-2 h-6 w-6 text-brand-600" aria-hidden />
-        <p className="text-sm text-slate-700">
-          Drag files here or{' '}
-          <button type="button" className="font-semibold text-brand-700 underline underline-offset-2" onClick={() => input.current?.click()}>
+        <span className={cx('mb-3 grid place-items-center rounded-2xl bg-white text-brand-600 shadow-sm ring-1 ring-slate-200', compact ? 'h-10 w-10' : 'h-12 w-12')}>
+          <CloudUpload className={compact ? 'h-5 w-5' : 'h-6 w-6'} aria-hidden />
+        </span>
+        <p className="text-sm font-semibold text-slate-800">
+          Drop files here or{' '}
+          <button type="button" className="text-brand-700 underline decoration-brand-300 underline-offset-4 hover:decoration-brand-600" onClick={() => input.current?.click()}>
             browse
           </button>
         </p>
-        <p className="mt-1 text-xs text-slate-500">Photos, videos, PDFs. On a phone you can take photos directly.</p>
+        <p className="mt-1 text-xs text-slate-500">Photos, PDFs and text files. On a phone you can take a photo straight from the camera.</p>
         <input
           ref={input}
           type="file"
@@ -122,12 +127,12 @@ export function FileUploader({
       </div>
 
       {value.length > 0 && (
-        <ul className="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
+        <ul className="mt-3 space-y-2" aria-label="Files you added">
           {value.map((d) => (
-            <li key={d.key} className="flex flex-wrap items-center gap-3 p-2.5">
+            <li key={d.key} className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
               <Thumb doc={d} size="sm" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-slate-800">{d.fileName}</p>
+                <p className="truncate text-sm font-semibold text-slate-800">{d.fileName}</p>
                 <p className="text-xs text-slate-500">{formatBytes(d.sizeBytes)}</p>
               </div>
               <label className="sr-only" htmlFor={`cat-${d.key}`}>
@@ -135,7 +140,7 @@ export function FileUploader({
               </label>
               <select
                 id={`cat-${d.key}`}
-                className="input w-auto py-1 text-xs"
+                className="input w-auto py-1.5 text-xs"
                 value={d.category}
                 onChange={(e) => {
                   const category = e.target.value as DocumentCategory;
@@ -149,7 +154,7 @@ export function FileUploader({
                   </option>
                 ))}
               </select>
-              <button type="button" className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" onClick={() => onChange(value.filter((x) => x.key !== d.key))} aria-label={`Remove ${d.fileName}`}>
+              <button type="button" className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600" onClick={() => onChange(value.filter((x) => x.key !== d.key))} aria-label={`Remove ${d.fileName}`}>
                 <Trash2 className="h-4 w-4" />
               </button>
             </li>
@@ -161,11 +166,11 @@ export function FileUploader({
 }
 
 function Thumb({ doc, size = 'md' }: { doc: Pick<ClaimDocument, 'previewUrl' | 'category' | 'fileName'>; size?: 'sm' | 'md' }) {
-  const cls = size === 'sm' ? 'h-10 w-10' : 'h-28 w-full';
-  if (doc.previewUrl) return <img src={doc.previewUrl} alt={`Preview of ${doc.fileName}`} className={cx(cls, 'rounded-md object-cover')} />;
+  const cls = size === 'sm' ? 'h-11 w-11' : 'h-32 w-full';
+  if (doc.previewUrl) return <img src={doc.previewUrl} alt={`Preview of ${doc.fileName}`} className={cx(cls, 'rounded-lg object-cover')} />;
   const Icon = doc.category === 'VIDEO' ? Video : doc.category === 'PHOTO' ? ImageIcon : FileText;
   return (
-    <div className={cx(cls, 'flex items-center justify-center rounded-md bg-slate-100 text-slate-400')}>
+    <div className={cx(cls, 'grid place-items-center rounded-lg bg-slate-100 text-slate-400')}>
       <Icon className={size === 'sm' ? 'h-5 w-5' : 'h-8 w-8'} aria-hidden />
     </div>
   );
@@ -173,7 +178,7 @@ function Thumb({ doc, size = 'md' }: { doc: Pick<ClaimDocument, 'previewUrl' | '
 
 export function DocumentGallery({ documents, highlight }: { documents: ClaimDocument[]; highlight?: string[] }) {
   const [open, setOpen] = useState<ClaimDocument | null>(null);
-  if (!documents.length) return <EmptyState icon={Paperclip} title="No documents yet" message="Uploaded photos, estimates and records will appear here." />;
+  if (!documents.length) return <EmptyState icon={Paperclip} title="No documents yet" message="Photos, estimates and records you add will appear here." />;
   return (
     <>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -183,13 +188,13 @@ export function DocumentGallery({ documents, highlight }: { documents: ClaimDocu
               type="button"
               onClick={() => setOpen(d)}
               className={cx(
-                'group w-full overflow-hidden rounded-lg border bg-white text-left transition hover:shadow-md',
+                'group w-full overflow-hidden rounded-xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lift',
                 highlight?.includes(d.id) ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-slate-200',
               )}
             >
               <Thumb doc={d} />
-              <div className="p-2">
-                <p className="truncate text-xs font-medium text-slate-800" title={d.fileName}>
+              <div className="p-2.5">
+                <p className="truncate text-xs font-semibold text-slate-800" title={d.fileName}>
                   {d.fileName}
                 </p>
                 <p className="truncate text-[11px] text-slate-500">
@@ -204,29 +209,29 @@ export function DocumentGallery({ documents, highlight }: { documents: ClaimDocu
         {open && (
           <div>
             {open.previewUrl ? (
-              <img src={open.previewUrl} alt={`Full preview of ${open.fileName}`} className="w-full rounded-lg" />
+              <img src={open.previewUrl} alt={`Full preview of ${open.fileName}`} className="w-full rounded-xl" />
             ) : (
-              <div className="flex h-48 flex-col items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+              <div className="flex h-48 flex-col items-center justify-center rounded-xl bg-slate-100 text-slate-500">
                 <FileText className="mb-2 h-10 w-10" aria-hidden />
-                <p className="text-sm">Preview not available in the demo (file metadata only).</p>
+                <p className="text-sm">No preview available for this file type.</p>
               </div>
             )}
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
               <div>
-                <dt className="text-xs text-slate-500">Type</dt>
-                <dd>{DOCUMENT_CATEGORY_LABELS[open.category]}</dd>
+                <dt className="eyebrow">Type</dt>
+                <dd className="mt-1 font-medium">{DOCUMENT_CATEGORY_LABELS[open.category]}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Size</dt>
-                <dd>{formatBytes(open.sizeBytes)}</dd>
+                <dt className="eyebrow">Size</dt>
+                <dd className="mt-1 font-medium">{formatBytes(open.sizeBytes)}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Uploaded by</dt>
-                <dd>{open.uploadedBy}</dd>
+                <dt className="eyebrow">Added by</dt>
+                <dd className="mt-1 font-medium">{open.uploadedBy}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Uploaded</dt>
-                <dd>{formatDate(open.uploadedAt)}</dd>
+                <dt className="eyebrow">Added</dt>
+                <dd className="mt-1 font-medium">{formatDate(open.uploadedAt)}</dd>
               </div>
             </dl>
           </div>
@@ -236,4 +241,4 @@ export function DocumentGallery({ documents, highlight }: { documents: ClaimDocu
   );
 }
 
-export const toDocInputs = (docs: PendingDoc[]): NewDocumentInput[] => docs.map(({ key: _key, ...d }) => d);
+export const toDocInputs = (docs: PendingDoc[]): NewDocumentInput[] => docs.map(({ key: _key, file: _file, ...d }) => d);

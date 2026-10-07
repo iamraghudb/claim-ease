@@ -54,7 +54,7 @@ export function resetDb(): void {
 }
 
 /** Simulated network latency. */
-export function delay<T>(value: T, ms = 200 + Math.random() * 250): Promise<T> {
+export function delay<T>(value: T, ms = 60 + Math.random() * 90): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), ms));
 }
 

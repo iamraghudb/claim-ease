@@ -4,7 +4,7 @@ import { STATUS_LABELS } from '../domain/statusMachine';
 import { getSlaStatus, type SlaState } from '../domain/sla';
 import type { Claim, ClaimStatus, ClaimType, Complexity, Priority } from '../domain/types';
 import { CLAIM_TYPE_LABELS } from '../domain/catalog';
-import { cx } from './ui';
+import { cx, InfoTip } from './ui';
 import { useAppStore } from '../store/appStore';
 
 // One color per status, used consistently on every screen.
@@ -27,7 +27,7 @@ export const STATUS_STYLES: Record<ClaimStatus, { badge: string; dot: string; ch
 
 export function StatusBadge({ status, className }: { status: ClaimStatus; className?: string }) {
   return (
-    <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', STATUS_STYLES[status].badge, className)}>
+    <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset', STATUS_STYLES[status].badge, className)}>
       <span className={cx('h-1.5 w-1.5 rounded-full', STATUS_STYLES[status].dot)} aria-hidden />
       {STATUS_LABELS[status]}
     </span>
@@ -36,12 +36,29 @@ export function StatusBadge({ status, className }: { status: ClaimStatus; classN
 
 export const CLAIM_TYPE_ICONS: Record<ClaimType, LucideIcon> = { AUTO: Car, PROPERTY: House, HEALTH: HeartPulse };
 
+/** Soft background + icon colour per claim type, so Health / Auto / Property are recognisable at a glance. */
+export const CLAIM_TYPE_TONES: Record<ClaimType, { tile: string; text: string }> = {
+  HEALTH: { tile: 'bg-rose-50 text-rose-600', text: 'text-rose-700' },
+  AUTO: { tile: 'bg-sky-50 text-sky-600', text: 'text-sky-700' },
+  PROPERTY: { tile: 'bg-amber-50 text-amber-600', text: 'text-amber-700' },
+};
+
 export function ClaimTypeTag({ type }: { type: ClaimType }) {
   const Icon = CLAIM_TYPE_ICONS[type];
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600">
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600">
       <Icon className="h-3.5 w-3.5" aria-hidden />
       {CLAIM_TYPE_LABELS[type]}
+    </span>
+  );
+}
+
+/** Square icon tile for a claim type. */
+export function ClaimTypeIcon({ type, size = 'md' }: { type: ClaimType; size?: 'sm' | 'md' | 'lg' }) {
+  const Icon = CLAIM_TYPE_ICONS[type];
+  return (
+    <span className={cx('grid shrink-0 place-items-center rounded-xl', CLAIM_TYPE_TONES[type].tile, size === 'sm' ? 'h-8 w-8' : size === 'lg' ? 'h-12 w-12' : 'h-10 w-10')}>
+      <Icon className={size === 'lg' ? 'h-6 w-6' : size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} aria-hidden />
     </span>
   );
 }
@@ -54,7 +71,7 @@ const PRIORITY_STYLES: Record<Priority, string> = {
 };
 
 export function PriorityBadge({ priority }: { priority: Priority }) {
-  return <span className={cx('rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide', PRIORITY_STYLES[priority])}>{priority}</span>;
+  return <span className={cx('rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide', PRIORITY_STYLES[priority])}>{priority}</span>;
 }
 
 const COMPLEXITY_STYLES: Record<Complexity, string> = {
@@ -65,7 +82,7 @@ const COMPLEXITY_STYLES: Record<Complexity, string> = {
 
 export function ComplexityBadge({ complexity }: { complexity: Complexity }) {
   return (
-    <span className={cx('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset', COMPLEXITY_STYLES[complexity])}>
+    <span className={cx('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset', COMPLEXITY_STYLES[complexity])}>
       {complexity === 'HIGH' && <Flame className="h-3 w-3" aria-hidden />}
       {complexity.charAt(0) + complexity.slice(1).toLowerCase()} complexity
     </span>
@@ -74,7 +91,7 @@ export function ComplexityBadge({ complexity }: { complexity: Complexity }) {
 
 export function FastTrackBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white" title="Low uncertainty: can be decided without investigation">
+    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-semibold text-white" title="Low uncertainty: can be decided without investigation">
       <Zap className="h-3 w-3" aria-hidden /> Fast-track eligible
     </span>
   );
@@ -102,11 +119,19 @@ export function SlaBadge({ claim, compact }: { claim: Pick<Claim, 'createdAt' | 
   const Icon = s.state === 'PAUSED' ? CirclePause : Clock;
   return (
     <span
-      className={cx('inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset', SLA_STYLES[s.state])}
-      title={`SLA due ${new Date(claim.slaDueDate).toLocaleString()} (illustrative target)`}
+      className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset', SLA_STYLES[s.state])}
+      title={`Target decision date: ${new Date(claim.slaDueDate).toLocaleString()}`}
     >
       <Icon className="h-3 w-3" aria-hidden />
       {compact && s.state === 'PAUSED' ? 'Paused' : s.label}
     </span>
   );
+}
+
+/**
+ * The one place the "these times are targets, not legal deadlines" caveat lives. Put it next to a
+ * time-window heading instead of repeating a paragraph on every screen.
+ */
+export function SlaInfo() {
+  return <InfoTip label="About target times">Target times are estimates. They vary by insurance type, state rules and policy terms, and are not legal deadlines.</InfoTip>;
 }

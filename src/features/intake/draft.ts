@@ -1,10 +1,28 @@
+import type { ScanResult } from '../../domain/aiTypes';
 import { POLICY_TO_CLAIM_TYPE } from '../../domain/catalog';
 import type { ClaimLike } from '../../domain/requirements';
 import type { AutoDetails, ClaimDetails, ClaimType, Customer, HealthDetails, Policy, PropertyDetails, Role } from '../../domain/types';
 import type { PendingDoc } from '../../components/Documents';
 import { PERSONAS } from '../../services';
 
+/** The latest AI document scan, kept on the draft so it survives moving between wizard steps. */
+export interface StoredScan extends ScanResult {
+  id: string;
+  /** True once the user has applied (or dismissed) the proposed changes. */
+  applied: boolean;
+  /** Labels of the form fields the AI filled in, so the details step can point them out. */
+  appliedLabels?: string[];
+}
+
 export interface IntakeDraft {
+  /** Latest AI document scan, if any. */
+  scan?: StoredScan;
+  /**
+   * Facts Smart start has actually captured (INTAKE keys, plus 'claimType'). The form's own defaults (car drivable,
+   * nobody hurt, home livable...) look the same as answers, so this is how a conversation tells "asked" from "assumed".
+   * The step-by-step form ignores it.
+   */
+  captured?: string[];
   policyNumber: string;
   policy?: Policy;
   customer?: Customer;

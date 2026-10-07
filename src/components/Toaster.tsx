@@ -5,7 +5,7 @@ import { cx } from './ui';
 export function Toaster() {
   const { toasts, dismiss } = useToastStore();
   return (
-    <div aria-live="polite" aria-atomic="false" className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 p-4 sm:items-end">
+    <div aria-live="polite" aria-atomic="false" className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 p-4 sm:items-start">
       {toasts.map((t) => {
         const Icon = t.kind === 'success' ? CircleCheck : t.kind === 'error' ? CircleAlert : Info;
         return (
@@ -13,7 +13,7 @@ export function Toaster() {
             key={t.id}
             role={t.kind === 'error' ? 'alert' : 'status'}
             className={cx(
-              'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border bg-white p-3 shadow-lg',
+              'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border bg-white p-3.5 shadow-pop',
               t.kind === 'success' ? 'border-emerald-200' : t.kind === 'error' ? 'border-red-200' : 'border-brand-200',
             )}
           >

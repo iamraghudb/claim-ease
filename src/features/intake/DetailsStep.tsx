@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Sparkles, Trash2 } from 'lucide-react';
 import {
   AUTO_INCIDENT_TYPES,
   DIAGNOSES,
@@ -10,7 +10,7 @@ import {
 } from '../../domain/catalog';
 import { formatUSD } from '../../domain/rulesEngine';
 import type { AutoDetails, HealthDetails, OtherParty, PropertyDetails } from '../../domain/types';
-import { Button, EstimatedToggle, Field } from '../../components/ui';
+import { Button, EstimatedToggle, Field, Pill } from '../../components/ui';
 import { draftAmount, toggleEstimated, type IntakeDraft } from './draft';
 
 export type DetailErrors = Partial<Record<string, string>>;
@@ -20,7 +20,7 @@ export function validateDetails(d: IntakeDraft): DetailErrors {
   if (!d.location.city.trim()) e.city = 'City is required';
   if (!d.location.state) e.state = 'State is required';
   if (d.incidentDescription.trim().length < 20) e.incidentDescription = 'Please describe what happened in at least 20 characters';
-  if (d.claimType !== 'HEALTH' && !(Number(d.estimatedAmount) > 0)) e.estimatedAmount = 'Enter your best estimate. Tick “Estimated / unsure” if you are not sure';
+  if (d.claimType !== 'HEALTH' && !(Number(d.estimatedAmount) > 0)) e.estimatedAmount = 'Enter your best estimate. Tick “I’m not sure” if you can’t give an exact figure';
   if (d.claimType === 'AUTO') {
     if (!d.auto.vehicle.make || !d.auto.vehicle.model) e.vehicle = 'Vehicle make and model are required';
     d.auto.otherParties.forEach((p, i) => {
@@ -43,21 +43,47 @@ type Props = { draft: IntakeDraft; setDraft: (d: IntakeDraft) => void; errors: D
 export function DetailsStep({ draft, setDraft, errors }: Props) {
   const isHealth = draft.claimType === 'HEALTH';
   const est = (k: string) => draft.estimatedFields.includes(k);
+  const filled = draft.scan?.appliedLabels ?? [];
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-slate-900">{isHealth ? 'Patient & service details' : 'What happened?'}</h2>
-        <p className="text-sm text-slate-600">
-          {isHealth ? 'Simplified CMS-1500 style claim: patient, provider, and service lines.' : 'Tell us in your own words. If you’re not sure about a value, mark it as estimated instead of guessing.'}
+        <h2 className="text-xl font-bold text-slate-900">{isHealth ? 'Check the patient and service details' : 'Check what happened'}</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          {filled.length > 0
+            ? 'Review what we filled in and complete anything that is left.'
+            : isHealth
+              ? 'The patient, the provider and each service on the bill.'
+              : 'Tell us in your own words. If you are not sure of a value, tick "I\'m not sure" instead of guessing.'}
         </p>
       </div>
+
+      {filled.length > 0 && (
+        <div className="ai-surface flex items-start gap-3 p-4">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ai-600 text-white">
+            <Sparkles className="h-4 w-4" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-900">
+              AI filled in {filled.length} item{filled.length === 1 ? '' : 's'} {draft.scan?.documents.length ? 'from your documents' : 'from what you told Ease'}
+            </p>
+            <p className="mt-1.5 flex flex-wrap gap-1.5">
+              {filled.map((l) => (
+                <Pill key={l} tone="purple">
+                  {l}
+                </Pill>
+              ))}
+            </p>
+            <p className="mt-1.5 text-xs text-slate-500">Please check them below and change anything that is not right.</p>
+          </div>
+        </div>
+      )}
 
       {draft.claimType === 'AUTO' && <AutoFields draft={draft} setDraft={setDraft} errors={errors} />}
       {draft.claimType === 'PROPERTY' && <PropertyFields draft={draft} setDraft={setDraft} errors={errors} />}
       {isHealth && <HealthFields draft={draft} setDraft={setDraft} errors={errors} />}
 
-      <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-2 text-sm font-semibold text-slate-800">{isHealth ? 'Clinical summary & location' : 'Description & amount'}</legend>
+      <fieldset className="grid gap-4 pt-2 sm:grid-cols-2">
+        <legend className="mb-3 text-base font-bold text-slate-900">{isHealth ? 'Clinical summary & location' : 'Description & amount'}</legend>
         <div className="sm:col-span-2">
           <Field label={isHealth ? 'Clinical summary' : 'Description of what happened'} htmlFor="desc" required error={errors.incidentDescription}>
             <textarea
@@ -83,7 +109,7 @@ export function DetailsStep({ draft, setDraft, errors }: Props) {
           </select>
         </Field>
         {isHealth ? (
-          <div className="sm:col-span-2 rounded-lg bg-slate-50 p-3 text-sm">
+          <div className="sm:col-span-2 rounded-xl bg-slate-50 p-4 text-sm">
             Total billed: <strong>{formatUSD(draftAmount(draft))}</strong> <span className="text-slate-500">(sum of service lines)</span>
           </div>
         ) : (
@@ -131,8 +157,8 @@ function AutoFields({ draft, setDraft, errors }: Props) {
   const est = (k: string) => draft.estimatedFields.includes(k);
   return (
     <>
-      <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-2 text-sm font-semibold text-slate-800">Accident details</legend>
+      <fieldset className="grid gap-4 pt-2 sm:grid-cols-2">
+        <legend className="mb-3 text-base font-bold text-slate-900">Accident details</legend>
         <div className="sm:col-span-2">
           <Field label="Type of incident" htmlFor="incidentType" required>
             <select id="incidentType" className="input" value={a.incidentType} onChange={(e) => set({ incidentType: e.target.value as AutoDetails['incidentType'] })}>
@@ -153,8 +179,8 @@ function AutoFields({ draft, setDraft, errors }: Props) {
         </div>
       </fieldset>
 
-      <fieldset className="grid gap-4 sm:grid-cols-4">
-        <legend className="mb-2 text-sm font-semibold text-slate-800">Your vehicle</legend>
+      <fieldset className="grid gap-4 pt-2 sm:grid-cols-4">
+        <legend className="mb-3 text-base font-bold text-slate-900">Your vehicle</legend>
         <Field label="Year" htmlFor="vyear">
           <input id="vyear" type="number" className="input" value={a.vehicle.year ?? ''} onChange={(e) => set({ vehicle: { ...a.vehicle, year: Number(e.target.value) || undefined } })} />
         </Field>
@@ -175,12 +201,12 @@ function AutoFields({ draft, setDraft, errors }: Props) {
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold text-slate-800">Other parties involved</legend>
+      <fieldset className="pt-2">
+        <legend className="mb-3 text-base font-bold text-slate-900">Other parties involved</legend>
         {a.otherParties.length === 0 && <p className="mb-2 text-sm text-slate-500">No other vehicles or people involved.</p>}
         <div className="space-y-3">
           {a.otherParties.map((p, i) => (
-            <div key={i} className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3 sm:grid-cols-3">
+            <div key={i} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-3">
               <Field label="Name" htmlFor={`pname${i}`} required error={errors[`party${i}`]}>
                 <input id={`pname${i}`} className="input" value={p.name} onChange={(e) => setParty(i, { name: e.target.value })} />
               </Field>
@@ -225,8 +251,8 @@ function PropertyFields({ draft, setDraft, errors }: Props) {
   const est = (k: string) => draft.estimatedFields.includes(k);
   const theft = p.damageType === 'THEFT' || p.damageType === 'VANDALISM';
   return (
-    <fieldset className="grid gap-4 sm:grid-cols-2">
-      <legend className="mb-2 text-sm font-semibold text-slate-800">Damage details</legend>
+    <fieldset className="grid gap-4 pt-2 sm:grid-cols-2">
+      <legend className="mb-3 text-base font-bold text-slate-900">Damage details</legend>
       <Field label="Type of damage" htmlFor="damageType" required>
         <select id="damageType" className="input" value={p.damageType} onChange={(e) => set({ damageType: e.target.value as PropertyDetails['damageType'] })}>
           {PROPERTY_DAMAGE_TYPES.map((t) => (
@@ -261,7 +287,7 @@ function PropertyFields({ draft, setDraft, errors }: Props) {
         </Field>
       )}
       {!p.habitable && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 sm:col-span-2">
+        <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 sm:col-span-2">
           If your home is unlivable, keep receipts for hotels and meals. Many policies include <strong>Loss of Use</strong> coverage. Your claim will be prioritized.
         </p>
       )}
@@ -276,8 +302,8 @@ function HealthFields({ draft, setDraft, errors }: Props) {
   const setLine = (i: number, patch: Partial<HealthDetails['lines'][number]>) => set({ lines: h.lines.map((l, j) => (j === i ? { ...l, ...patch } : l)) });
   return (
     <>
-      <fieldset className="grid gap-4 sm:grid-cols-3">
-        <legend className="mb-2 text-sm font-semibold text-slate-800">Patient / member</legend>
+      <fieldset className="grid gap-4 pt-2 sm:grid-cols-3">
+        <legend className="mb-3 text-base font-bold text-slate-900">Patient / member</legend>
         <Field label="Member" htmlFor="member" required error={errors.memberId}>
           <select
             id="member"
@@ -304,8 +330,8 @@ function HealthFields({ draft, setDraft, errors }: Props) {
         </Field>
       </fieldset>
 
-      <fieldset className="grid gap-4 sm:grid-cols-3">
-        <legend className="mb-2 text-sm font-semibold text-slate-800">Rendering provider</legend>
+      <fieldset className="grid gap-4 pt-2 sm:grid-cols-3">
+        <legend className="mb-3 text-base font-bold text-slate-900">Rendering provider</legend>
         <Field label="Provider / practice" htmlFor="prov">
           <input id="prov" className="input" value={h.provider.name} onChange={(e) => set({ provider: { ...h.provider, name: e.target.value } })} />
         </Field>
@@ -323,7 +349,7 @@ function HealthFields({ draft, setDraft, errors }: Props) {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-slate-500">{HEALTH_SERVICE_TYPES.find((t) => t.value === h.serviceType)?.hint} (illustrative)</p>
+          <p className="mt-1 text-xs text-slate-500">{HEALTH_SERVICE_TYPES.find((t) => t.value === h.serviceType)?.hint}</p>
         </Field>
         <Field label="Place of service" htmlFor="pos">
           <select id="pos" className="input" value={h.placeOfService} onChange={(e) => set({ placeOfService: e.target.value })}>
@@ -336,11 +362,11 @@ function HealthFields({ draft, setDraft, errors }: Props) {
         </Field>
       </fieldset>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold text-slate-800">Service lines (simplified CPT / ICD-10)</legend>
+      <fieldset className="pt-2">
+        <legend className="mb-3 text-base font-bold text-slate-900">Service lines (simplified CPT / ICD-10)</legend>
         <div className="space-y-3">
           {h.lines.map((l, i) => (
-            <div key={i} className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3 sm:grid-cols-[2fr_2fr_80px_120px_auto] sm:items-end">
+            <div key={i} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-[2fr_2fr_80px_120px_auto] sm:items-end">
               <Field label={`Procedure ${i + 1}`} htmlFor={`proc${i}`} error={errors[`line${i}`]}>
                 <select id={`proc${i}`} className="input" value={l.procedureCode} onChange={(e) => setLine(i, { procedureCode: e.target.value })}>
                   <option value="">Select…</option>

@@ -2,3 +2,9 @@ node_modules
 dist
 *.tsbuildinfo
 .DS_Store
+
+# Secrets: the Anthropic API key lives here and must never be committed
+.env
+.env.*
+!.env.example
+.txt

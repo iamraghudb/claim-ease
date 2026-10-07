@@ -37,9 +37,9 @@ export function InfoRequestPanel({ claim }: { claim: Claim }) {
   }
 
   return (
-    <section className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 sm:p-5" aria-labelledby="info-req-title">
-      <h2 id="info-req-title" className="flex items-center gap-2 text-base font-semibold text-amber-950">
-        <CircleAlert className="h-5 w-5" aria-hidden /> We need a few more items
+    <section className="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-white p-5 shadow-soft ring-4 ring-amber-100/70 sm:p-6" aria-labelledby="info-req-title">
+      <h2 id="info-req-title" className="flex items-center gap-2 text-lg font-bold text-amber-950">
+        <CircleAlert className="h-5 w-5 text-amber-600" aria-hidden /> We need a few more things from you
       </h2>
       <p className="mt-1 text-sm text-amber-900">
         Requested by {request.requestedBy} on {formatDate(request.requestedAt)}. {request.message}
@@ -49,7 +49,7 @@ export function InfoRequestPanel({ claim }: { claim: Claim }) {
           <li
             key={i.id}
             className={cx(
-              'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm',
+              'flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm',
               i.fulfilled ? 'border-emerald-200 bg-white text-emerald-800' : i.staged ? 'border-brand-200 bg-white text-brand-800' : 'border-amber-300 bg-white font-medium text-amber-950 ring-2 ring-amber-200',
             )}
           >
@@ -70,7 +70,7 @@ export function InfoRequestPanel({ claim }: { claim: Claim }) {
             Upload only
           </Button>
           <Button icon={Send} onClick={submit} loading={pending === 'submit-info'} disabled={!docs.length && !response.trim() && items.every((i) => !i.fulfilled)}>
-            Submit requested information
+            Send to my adjuster
           </Button>
         </div>
       </div>

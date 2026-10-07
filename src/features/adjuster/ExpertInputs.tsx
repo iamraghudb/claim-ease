@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Wrench } from 'lucide-react';
+import { Check, Clock, Plus, Wrench } from 'lucide-react';
 import { EXPERT_TYPES } from '../../domain/catalog';
 import { formatUSD } from '../../domain/rulesEngine';
 import type { Claim, ExpertInput, ExpertType } from '../../domain/types';
@@ -43,33 +43,58 @@ export function ExpertInputs({ claim, disabled }: { claim: Claim; disabled?: boo
     }
   }
 
+  const pendingCount = claim.expertInputs.filter((e) => e.status === 'PENDING').length;
+
   return (
-    <Card title="External expert input" icon={Wrench} actions={<Button size="sm" variant="secondary" icon={Plus} disabled={disabled} onClick={() => setOpen(true)}>Record input</Button>}>
+    <Card
+      title="External expert input"
+      icon={Wrench}
+      actions={
+        <Button size="sm" variant="secondary" icon={Plus} disabled={disabled} onClick={() => setOpen(true)}>
+          Record input
+        </Button>
+      }
+    >
       {claim.expertInputs.length === 0 ? (
-        <EmptyState icon={Wrench} title="No expert input" message="Engineers, contractors, medical reviewers and repair shops can be recorded here. Pending input adds a third-party review trigger." />
+        <EmptyState icon={Wrench} title="No expert input yet" message="Engineers, contractors, medical reviewers and repair shops can be recorded here. Pending input adds a third-party review trigger." />
       ) : (
-        <ul className="space-y-2">
-          {claim.expertInputs.map((e) => (
-            <li key={e.id} className="rounded-lg border border-slate-200 p-3 text-sm">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-medium text-slate-900">{e.expertName}</span>
-                <Pill tone="slate">{EXPERT_TYPES.find((t) => t.value === e.expertType)?.label}</Pill>
-                <Pill tone={e.status === 'PENDING' ? 'amber' : 'green'}>{e.status.toLowerCase()}</Pill>
-                {e.status === 'PENDING' && (
-                  <Button size="sm" variant="ghost" className="ml-auto" disabled={disabled} onClick={() => setCompleting(e)}>
-                    Record result
-                  </Button>
+        <>
+          {pendingCount > 0 && (
+            <p className="mb-3 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 ring-1 ring-inset ring-amber-200">
+              <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {pendingCount} {pendingCount === 1 ? 'result is' : 'results are'} still awaited. This keeps the claim flagged for review.
+            </p>
+          )}
+          <ul className="space-y-3">
+            {claim.expertInputs.map((e) => (
+              <li key={e.id} className="rounded-xl border border-slate-200 p-3.5 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-slate-900">{e.expertName}</span>
+                  <Pill tone="slate">{EXPERT_TYPES.find((t) => t.value === e.expertType)?.label}</Pill>
+                  <Pill tone={e.status === 'PENDING' ? 'amber' : 'green'}>
+                    {e.status === 'PENDING' ? <Clock className="h-3 w-3" aria-hidden /> : <Check className="h-3 w-3" aria-hidden />}
+                    {e.status === 'PENDING' ? 'Awaiting result' : 'Received'}
+                  </Pill>
+                  {e.status === 'PENDING' && (
+                    <Button size="sm" variant="secondary" className="ml-auto" disabled={disabled} onClick={() => setCompleting(e)}>
+                      Record result
+                    </Button>
+                  )}
+                </div>
+                <p className="mt-1.5 text-xs text-slate-500">
+                  Requested {formatDate(e.requestedAt)}
+                  {e.receivedAt && ` · received ${formatDate(e.receivedAt)}`}
+                </p>
+                {e.summary && <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-slate-700">{e.summary}</p>}
+                {!!e.recommendedAmount && (
+                  <p className="mt-2 text-slate-700">
+                    Recommended loss: <strong className="tabular-nums text-slate-900">{formatUSD(e.recommendedAmount)}</strong>
+                  </p>
                 )}
-              </div>
-              <p className="mt-1 text-xs text-slate-500">
-                Requested {formatDate(e.requestedAt)}
-                {e.receivedAt && ` · received ${formatDate(e.receivedAt)}`}
-              </p>
-              {e.summary && <p className="mt-1 text-slate-700">{e.summary}</p>}
-              {e.recommendedAmount && <p className="mt-0.5 text-slate-700">Recommended: <strong>{formatUSD(e.recommendedAmount)}</strong></p>}
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       <Modal
@@ -78,8 +103,12 @@ export function ExpertInputs({ claim, disabled }: { claim: Claim; disabled?: boo
         title="Record external expert input"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={save} disabled={!form.expertName.trim()} loading={pending === 'expert'}>Save</Button>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={save} disabled={!form.expertName.trim()} loading={pending === 'expert'}>
+              Save input
+            </Button>
           </>
         }
       >
@@ -87,7 +116,9 @@ export function ExpertInputs({ claim, disabled }: { claim: Claim; disabled?: boo
           <Field label="Expert type" htmlFor="ex-type">
             <select id="ex-type" className="input" value={form.expertType} onChange={(e) => setForm({ ...form, expertType: e.target.value as ExpertType })}>
               {EXPERT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
               ))}
             </select>
           </Field>
@@ -120,11 +151,15 @@ export function ExpertInputs({ claim, disabled }: { claim: Claim; disabled?: boo
       <Modal
         open={!!completing}
         onClose={() => setCompleting(null)}
-        title={`Record result · ${completing?.expertName ?? ''}`}
+        title={completing ? `Record result from ${completing.expertName}` : 'Record result'}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setCompleting(null)}>Cancel</Button>
-            <Button onClick={complete} disabled={!result.summary.trim()} loading={pending === 'complete'}>Save result</Button>
+            <Button variant="secondary" onClick={() => setCompleting(null)}>
+              Cancel
+            </Button>
+            <Button onClick={complete} disabled={!result.summary.trim()} loading={pending === 'complete'}>
+              Save result
+            </Button>
           </>
         }
       >

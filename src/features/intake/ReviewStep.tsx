@@ -1,23 +1,32 @@
-import { Pencil, Zap, Search } from 'lucide-react';
+import { useMemo } from 'react';
+import { Pencil, Search, Zap } from 'lucide-react';
 import { AUTO_INCIDENT_TYPES, CLAIM_TYPE_LABELS, DOCUMENT_CATEGORY_LABELS, findProcedure, PROPERTY_DAMAGE_TYPES } from '../../domain/catalog';
+import type { ReadinessResult } from '../../domain/readiness';
 import { formatUSD } from '../../domain/rulesEngine';
 import type { RulesResult } from '../../domain/types';
 import { formatDate } from '../../components/format';
 import { Alert, Button, DescriptionList } from '../../components/ui';
+import { AiGapCheck } from './AiGapCheck';
+import { buildDraftContext } from './aiDraftContext';
 import { draftAmount, type IntakeDraft } from './draft';
 
-export function ReviewStep({ draft, goTo, rules, confirmed, setConfirmed }: {
+/** Wizard step indexes, so "Edit" jumps to the right place. Keep in sync with STEPS in IntakeWizard. */
+export const STEP = { POLICY: 0, DOCUMENTS: 1, DETAILS: 2, REVIEW: 3 } as const;
+
+export function ReviewStep({ draft, goTo, rules, readiness, confirmed, setConfirmed }: {
   draft: IntakeDraft;
   goTo: (step: number) => void;
   rules: RulesResult;
+  readiness: ReadinessResult;
   confirmed: boolean;
   setConfirmed: (v: boolean) => void;
 }) {
-  const est = (k: string) => (draft.estimatedFields.includes(k) ? <span className="ml-1 text-xs font-medium text-amber-700">(estimated)</span> : null);
+  const aiContext = useMemo(() => buildDraftContext(draft, readiness, rules), [draft, readiness, rules]);
+  const est = (k: string) => (draft.estimatedFields.includes(k) ? <span className="ml-1.5 text-xs font-semibold text-amber-700">(not sure)</span> : null);
   const Section = ({ title, step, children }: { title: string; step: number; children: React.ReactNode }) => (
-    <section className="rounded-xl border border-slate-200 p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+    <section className="rounded-2xl border border-slate-200 p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-sm font-bold text-slate-900">{title}</h3>
         <Button size="sm" variant="ghost" icon={Pencil} onClick={() => goTo(step)} aria-label={`Edit ${title}`}>
           Edit
         </Button>
@@ -28,23 +37,25 @@ export function ReviewStep({ draft, goTo, rules, confirmed, setConfirmed }: {
 
   const d = draft;
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold text-slate-900">Review & submit</h2>
-        <p className="text-sm text-slate-600">Check everything before you submit. You can add documents later, too.</p>
+        <h2 className="text-xl font-bold text-slate-900">Review and submit</h2>
+        <p className="mt-1 text-sm text-slate-600">Take a last look. You can add documents later too.</p>
       </div>
+
+      <AiGapCheck context={aiContext} />
 
       {rules.fastTrackEligible ? (
         <Alert tone="success" icon={Zap} title="Looks fast-track eligible">
-          Based on what you’ve provided, this claim has low uncertainty and may be decided without further investigation.
+          Based on what you&apos;ve provided, this claim has low uncertainty and may be decided without further investigation.
         </Alert>
       ) : (
-        <Alert tone="info" icon={Search} title="This claim will get a closer human review">
-          More uncertainty means more investigation. Reasons: {rules.triggers.map((t) => t.label.toLowerCase()).join(', ') || 'amount above fast-track limit'}. Completing missing items can speed things up.
+        <Alert tone="info" icon={Search} title="A person will take a closer look">
+          More uncertainty means more checking. Reasons: {rules.triggers.map((t) => t.label.toLowerCase()).join(', ') || 'the amount is above the fast-track limit'}. Filling in what&apos;s missing can speed things up.
         </Alert>
       )}
 
-      <Section title="Policy" step={0}>
+      <Section title="Policy" step={STEP.POLICY}>
         <DescriptionList
           cols={3}
           items={[
@@ -55,7 +66,21 @@ export function ReviewStep({ draft, goTo, rules, confirmed, setConfirmed }: {
         />
       </Section>
 
-      <Section title="Details" step={1}>
+      <Section title={`Documents (${d.documents.length})`} step={STEP.DOCUMENTS}>
+        {d.documents.length ? (
+          <ul className="flex flex-wrap gap-2">
+            {d.documents.map((x) => (
+              <li key={x.key} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                {x.fileName} · {DOCUMENT_CATEGORY_LABELS[x.category]}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-500">No documents attached.</p>
+        )}
+      </Section>
+
+      <Section title="Details" step={STEP.DETAILS}>
         <DescriptionList
           items={[
             ...(d.claimType === 'AUTO'
@@ -87,26 +112,12 @@ export function ReviewStep({ draft, goTo, rules, confirmed, setConfirmed }: {
             { label: 'Catastrophe event', value: d.catastrophe ? 'Yes' : 'No' },
           ]}
         />
-        <p className="mt-3 whitespace-pre-line rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{d.incidentDescription || 'No description provided.'}</p>
+        <p className="mt-4 whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{d.incidentDescription || 'No description provided.'}</p>
       </Section>
 
-      <Section title={`Documents (${d.documents.length})`} step={2}>
-        {d.documents.length ? (
-          <ul className="flex flex-wrap gap-2">
-            {d.documents.map((x) => (
-              <li key={x.key} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
-                {x.fileName} · {DOCUMENT_CATEGORY_LABELS[x.category]}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-slate-500">No documents attached.</p>
-        )}
-      </Section>
-
-      <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
-        <input type="checkbox" className="mt-0.5 h-4 w-4 accent-brand-600" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-        I confirm this information is accurate and complete to the best of my knowledge. Values I marked as estimated are my best guess.
+      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-700">
+        <input type="checkbox" className="mt-0.5 h-5 w-5 rounded accent-brand-600" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
+        <span>I confirm this information is accurate and complete to the best of my knowledge. Anything I marked as &ldquo;not sure&rdquo; is my best guess.</span>
       </label>
     </div>
   );

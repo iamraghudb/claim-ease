@@ -9,7 +9,7 @@ import { formatDate, todayIso } from '../../components/format';
 import { Alert, Button, DescriptionList, Field, EstimatedToggle } from '../../components/ui';
 import { applyPolicy, toggleEstimated, type IntakeDraft } from './draft';
 
-const DEMO_POLICIES = [
+const SAMPLE_POLICIES = [
   { number: 'POL-100245', label: 'Auto' },
   { number: 'POL-200318', label: 'Homeowners' },
   { number: 'POL-300577', label: 'Health' },
@@ -41,23 +41,25 @@ export function PolicyStep({ draft, setDraft, role }: { draft: IntakeDraft; setD
 
   const p = draft.policy;
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-slate-900">Find the <GlossaryTerm id="policy">policy</GlossaryTerm></h2>
-        <p className="text-sm text-slate-600">
+        <h2 className="text-xl font-bold text-slate-900">
+          {role === 'PROVIDER' ? 'Which plan is the patient on?' : <>Which <GlossaryTerm id="policy">policy</GlossaryTerm> is this for?</>}
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
           {role === 'PROVIDER'
-            ? "Enter the patient's plan/policy number from their insurance card and the date of service."
-            : 'Your policy number is on your ID card or declarations page. We check that it was active on the date of loss.'}
+            ? "Enter the plan number from the patient's insurance card and the date of service."
+            : 'Your policy number is on your ID card or declarations page. We check that it was active on the day it happened.'}
         </p>
       </div>
       <form
-        className="grid gap-4 sm:grid-cols-[1fr_200px_auto] sm:items-start"
+        className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_210px_auto] sm:items-start"
         onSubmit={(e) => {
           e.preventDefault();
           void lookup();
         }}
       >
-        <Field label="Policy number" htmlFor="policyNumber" required hint="Format: POL-123456">
+        <Field label="Policy number" htmlFor="policyNumber" required hint="Looks like POL-123456">
           <input
             id="policyNumber"
             className="input font-mono uppercase"
@@ -73,33 +75,37 @@ export function PolicyStep({ draft, setDraft, role }: { draft: IntakeDraft; setD
           </Field>
           {role !== 'PROVIDER' && <EstimatedToggle checked={draft.estimatedFields.includes('dateOfLoss')} onChange={(v) => setDraft(toggleEstimated(draft, 'dateOfLoss', v))} />}
         </div>
-        <div className="sm:pt-6">
+        <div className="sm:pt-[30px]">
           <Button type="submit" icon={Search} loading={loading} disabled={!draft.policyNumber.trim()} className="w-full sm:w-auto">
-            Look up
+            Check policy
           </Button>
         </div>
       </form>
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-        <span>Demo policies:</span>
-        {DEMO_POLICIES.filter((d) => role !== 'PROVIDER' || d.label === 'Health').map((d) => (
+        <span className="font-medium">Try a sample:</span>
+        {SAMPLE_POLICIES.filter((d) => role !== 'PROVIDER' || d.label === 'Health').map((d) => (
           <button
             key={d.number}
             type="button"
-            className="rounded-full border border-slate-300 bg-white px-2.5 py-1 font-mono text-slate-700 hover:border-brand-500 hover:text-brand-700"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 shadow-sm transition hover:border-brand-400 hover:text-brand-700"
             onClick={() => setDraft({ ...draft, policyNumber: d.number, policy: undefined, dateOfLoss: draft.dateOfLoss || todayIso() })}
           >
-            {d.number} <span className="font-sans text-slate-500">· {d.label}</span>
+            <span className="font-mono">{d.number}</span> <span className="text-slate-400">· {d.label}</span>
           </button>
         ))}
       </div>
 
-      {error && <Alert tone="error" title="We couldn't verify this policy">{error}</Alert>}
+      {error && (
+        <Alert tone="error" title="We couldn't verify this policy">
+          {error}
+        </Alert>
+      )}
 
       {p && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-          <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-800">
-            <CircleCheck className="h-5 w-5" aria-hidden /> Policy verified — active on {formatDate(draft.dateOfLoss)}
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <p className="mb-4 flex items-center gap-2 text-sm font-bold text-emerald-800">
+            <CircleCheck className="h-5 w-5" aria-hidden /> Policy verified: it was active on {formatDate(draft.dateOfLoss)}
           </p>
           <DescriptionList
             cols={3}

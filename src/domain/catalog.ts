@@ -19,10 +19,10 @@ export const CLAIM_TYPE_LABELS: Record<ClaimType, string> = {
 };
 
 export const POLICY_TYPE_LABELS: Record<PolicyType, string> = {
-  AUTO: 'Personal Auto',
-  HOME: 'Homeowners',
-  RENTERS: 'Renters',
-  HEALTH: 'Health (PPO)',
+  AUTO: 'Auto insurance',
+  HOME: 'Home insurance',
+  RENTERS: 'Renters insurance',
+  HEALTH: 'Health insurance',
 };
 
 export const POLICY_TO_CLAIM_TYPE: Record<PolicyType, ClaimType> = {
@@ -36,9 +36,9 @@ export const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategory, string> = {
   PHOTO: 'Photo',
   VIDEO: 'Video',
   POLICE_REPORT: 'Police report',
-  REPAIR_ESTIMATE: 'Repair / contractor estimate',
+  REPAIR_ESTIMATE: 'Repair estimate',
   RECEIPT: 'Receipt',
-  INVOICE: 'Itemized bill / invoice',
+  INVOICE: 'Itemized bill',
   MEDICAL_RECORD: 'Medical record',
   OTHER: 'Other',
 };
@@ -55,9 +55,9 @@ export const AUTO_INCIDENT_TYPES: { value: AutoIncidentType; label: string; cove
 export const PROPERTY_DAMAGE_TYPES: { value: PropertyDamageType; label: string }[] = [
   { value: 'FIRE', label: 'Fire or smoke' },
   { value: 'WATER', label: 'Sudden water damage (burst pipe, appliance leak)' },
-  { value: 'WIND', label: 'Wind / storm' },
+  { value: 'WIND', label: 'Wind or storm' },
   { value: 'HAIL', label: 'Hail' },
-  { value: 'THEFT', label: 'Theft / burglary' },
+  { value: 'THEFT', label: 'Theft or burglary' },
   { value: 'VANDALISM', label: 'Vandalism' },
   { value: 'FLOOD', label: 'Flood (rising surface water)' },
   { value: 'EARTHQUAKE', label: 'Earthquake' },
@@ -117,9 +117,9 @@ export function findProcedure(code: string): ProcedureCode | undefined {
 }
 
 export const HEALTH_SERVICE_TYPES: { value: HealthServiceType; label: string; hint: string }[] = [
-  { value: 'URGENT', label: 'Urgent care', hint: 'Example decision window: 72 hours' },
-  { value: 'PRE_SERVICE', label: 'Pre-service (prior authorization)', hint: 'Example decision window: 15 days' },
-  { value: 'POST_SERVICE', label: 'Post-service', hint: 'Example decision window: 30 days' },
+  { value: 'URGENT', label: 'Urgent care', hint: 'Target decision time: 72 hours' },
+  { value: 'PRE_SERVICE', label: 'Before treatment (prior approval)', hint: 'Target decision time: 15 days' },
+  { value: 'POST_SERVICE', label: 'After treatment', hint: 'Target decision time: 30 days' },
 ];
 
 export const PLACES_OF_SERVICE = [
@@ -153,13 +153,13 @@ export const DELAY_REASON_LABELS: Record<DelayReason, string> = {
   MISSING_INFORMATION: 'Missing information',
   INCORRECT_INFORMATION: 'Incorrect information',
   MISSING_DOCUMENTS: 'Missing documents',
-  UNCLEAR_LIABILITY: 'Unclear liability',
-  COVERAGE_UNCERTAINTY: 'Coverage uncertainty',
-  HIGH_VALUE_COMPLEXITY: 'High value / complexity',
-  THIRD_PARTIES: 'Third parties',
+  UNCLEAR_LIABILITY: 'Unclear who is at fault',
+  COVERAGE_UNCERTAINTY: 'Unsure what is covered',
+  HIGH_VALUE_COMPLEXITY: 'Large or complex claim',
+  THIRD_PARTIES: 'Waiting on other parties',
   FRAUD_INVESTIGATION: 'Fraud investigation',
-  VALUE_DISAGREEMENT: 'Value disagreement',
-  CATASTROPHE_VOLUME: 'Catastrophe volume',
+  VALUE_DISAGREEMENT: 'Disagreement on the amount',
+  CATASTROPHE_VOLUME: 'Storm or disaster volume',
   LEGAL_INVOLVEMENT: 'Legal involvement',
 };
 
@@ -181,15 +181,15 @@ export const INFO_REQUEST_TEMPLATES: Record<
     { label: 'Photos / video of damage', category: 'PHOTO', reason: 'MISSING_DOCUMENTS' },
     { label: 'Receipts for damaged items', category: 'RECEIPT', reason: 'MISSING_DOCUMENTS' },
     { label: 'Police report (theft/vandalism)', category: 'POLICE_REPORT', reason: 'MISSING_DOCUMENTS' },
-    { label: 'Mitigation invoice (water extraction, tarp)', category: 'INVOICE', reason: 'MISSING_DOCUMENTS' },
+    { label: 'Invoice for emergency repairs (water removal, tarp)', category: 'INVOICE', reason: 'MISSING_DOCUMENTS' },
     { label: 'Corrected damage description', reason: 'INCORRECT_INFORMATION' },
   ],
   HEALTH: [
     { label: 'Medical records / clinical notes', category: 'MEDICAL_RECORD', reason: 'MISSING_DOCUMENTS' },
     { label: 'Itemized bill', category: 'INVOICE', reason: 'MISSING_DOCUMENTS' },
     { label: 'Corrected procedure or diagnosis code', reason: 'INCORRECT_INFORMATION' },
-    { label: 'Referral / prior authorization number', reason: 'MISSING_INFORMATION' },
-    { label: 'Other insurance (coordination of benefits)', reason: 'THIRD_PARTIES' },
+    { label: 'Referral or prior-approval number', reason: 'MISSING_INFORMATION' },
+    { label: 'Details of any other insurance', reason: 'THIRD_PARTIES' },
   ],
 };
 

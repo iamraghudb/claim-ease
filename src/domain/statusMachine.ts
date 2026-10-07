@@ -87,17 +87,19 @@ export function assertTransition(from: ClaimStatus, to: ClaimStatus, role?: Role
   if (!canTransition(from, to, role)) throw new InvalidTransitionError(from, to, role);
 }
 
+// Plain-English names and explanations. These are what a first-time claimant reads, so no insurance jargon.
+
 export const STATUS_LABELS: Record<ClaimStatus, string> = {
-  REPORTED: 'Reported',
-  REGISTERED: 'Registered',
+  REPORTED: 'Received',
+  REGISTERED: 'In the queue',
   UNDER_REVIEW: 'Under review',
-  INFORMATION_REQUIRED: 'Information required',
-  INVESTIGATION: 'Investigation',
-  ADJUDICATION: 'Adjudication',
+  INFORMATION_REQUIRED: 'More info needed',
+  INVESTIGATION: 'Investigating',
+  ADJUDICATION: 'Decision pending',
   APPROVED: 'Approved',
-  PARTIALLY_APPROVED: 'Partially approved',
+  PARTIALLY_APPROVED: 'Partly approved',
   DENIED: 'Denied',
-  APPEALED: 'Appealed',
+  APPEALED: 'Appeal in review',
   PAYMENT_PENDING: 'Payment pending',
   PAID: 'Paid',
   CLOSED: 'Closed',
@@ -105,20 +107,20 @@ export const STATUS_LABELS: Record<ClaimStatus, string> = {
 };
 
 export const STATUS_DESCRIPTIONS: Record<ClaimStatus, string> = {
-  REPORTED: 'First notice of loss received.',
-  REGISTERED: 'Claim number issued and the claim is queued for an adjuster.',
-  UNDER_REVIEW: 'An adjuster is reviewing the claim, policy, and documents.',
-  INFORMATION_REQUIRED: 'We need a few more items from you before we can continue.',
-  INVESTIGATION: 'Additional investigation (inspection, experts, liability) is under way.',
-  ADJUDICATION: 'Coverage and payable amount are being decided.',
+  REPORTED: 'We have received the claim. Next it gets a claim number and joins the queue.',
+  REGISTERED: 'The claim has its number and is waiting for someone to start reviewing it.',
+  UNDER_REVIEW: 'The person reviewing the claim (the adjuster) is checking what happened, the policy and the documents.',
+  INFORMATION_REQUIRED: 'We need a few more items from you before we can go on. The review carries on as soon as you send them.',
+  INVESTIGATION: 'We are taking a closer look, for example with an inspection or an expert, before deciding.',
+  ADJUDICATION: 'All the facts are in. We are deciding what the policy covers and how much to pay.',
   APPROVED: 'The claim was approved in full.',
-  PARTIALLY_APPROVED: 'Part of the claim was approved. You may appeal the decision.',
-  DENIED: 'The claim was denied. You may appeal the decision.',
-  APPEALED: 'Your appeal is being reviewed by a different examiner.',
-  PAYMENT_PENDING: 'Payment is being prepared.',
-  PAID: 'Payment has been issued.',
-  CLOSED: 'The claim is closed.',
-  REOPENED: 'The claim was reopened for further review.',
+  PARTIALLY_APPROVED: 'Part of the claim was approved. If you disagree, you can ask for another review (an appeal).',
+  DENIED: 'We could not approve this claim. The reason is shown with the decision, and you can ask for another review (an appeal).',
+  APPEALED: 'A different reviewer is taking a fresh look at the decision.',
+  PAYMENT_PENDING: 'The claim is approved and the payment is being prepared.',
+  PAID: 'The payment has been sent.',
+  CLOSED: 'This claim is finished and closed.',
+  REOPENED: 'This claim was reopened for another look.',
 };
 
 // ---------- Lifecycle timeline ----------
@@ -134,12 +136,12 @@ export interface TimelineStage {
 }
 
 const STAGES: { key: string; label: string; statuses: ClaimStatus[]; optional?: boolean }[] = [
-  { key: 'reported', label: 'Reported', statuses: ['REPORTED'] },
-  { key: 'registered', label: 'Registered', statuses: ['REGISTERED'] },
+  { key: 'reported', label: 'Received', statuses: ['REPORTED'] },
+  { key: 'registered', label: 'In the queue', statuses: ['REGISTERED'] },
   { key: 'review', label: 'Under review', statuses: ['UNDER_REVIEW', 'INFORMATION_REQUIRED', 'REOPENED'] },
   { key: 'investigation', label: 'Investigation', statuses: ['INVESTIGATION'], optional: true },
-  { key: 'adjudication', label: 'Adjudication', statuses: ['ADJUDICATION', 'APPEALED'] },
-  { key: 'decision', label: 'Decision', statuses: ['APPROVED', 'PARTIALLY_APPROVED', 'DENIED'] },
+  { key: 'adjudication', label: 'Decision pending', statuses: ['ADJUDICATION', 'APPEALED'] },
+  { key: 'decision', label: 'Decision made', statuses: ['APPROVED', 'PARTIALLY_APPROVED', 'DENIED'] },
   { key: 'payment', label: 'Payment', statuses: ['PAYMENT_PENDING', 'PAID'] },
   { key: 'closed', label: 'Closed', statuses: ['CLOSED'] },
 ];

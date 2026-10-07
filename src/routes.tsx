@@ -6,6 +6,8 @@ import { ButtonLink, EmptyState, Spinner } from './components/ui';
 import Home from './pages/Home';
 
 const IntakeWizard = lazy(() => import('./features/intake/IntakeWizard'));
+const FileChooser = lazy(() => import('./features/intake/smart/FileChooser'));
+const SmartStart = lazy(() => import('./features/intake/smart/SmartStart'));
 const Confirmation = lazy(() => import('./features/intake/Confirmation'));
 const MyClaims = lazy(() => import('./features/claims/MyClaims'));
 const ClaimDetail = lazy(() => import('./features/claims/ClaimDetail'));
@@ -17,6 +19,7 @@ const AdminDashboard = lazy(() => import('./features/admin/AdminDashboard'));
 const ConfigPage = lazy(() => import('./features/admin/ConfigPage'));
 const HealthClaimView = lazy(() => import('./features/health/HealthClaimView'));
 const GlossaryPage = lazy(() => import('./pages/GlossaryPage'));
+const Welcome = lazy(() => import('./features/welcome/Welcome'));
 
 const s = (el: ReactNode) => <Suspense fallback={<Spinner />}>{el}</Suspense>;
 
@@ -30,7 +33,9 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Home /> },
-      { path: 'file', element: s(<IntakeWizard />) },
+      { path: 'file', element: s(<FileChooser />) },
+      { path: 'file/smart', element: s(<SmartStart />) },
+      { path: 'file/form', element: s(<IntakeWizard />) },
       { path: 'file/confirmation/:claimNumber', element: s(<Confirmation />) },
       { path: 'claims', element: s(<MyClaims />) },
       { path: 'claims/:claimNumber', element: s(<ClaimDetail />) },
@@ -45,4 +50,6 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFound /> },
     ],
   },
+  // Full screen, outside the app shell.
+  { path: '/welcome', element: s(<Welcome />) },
 ]);

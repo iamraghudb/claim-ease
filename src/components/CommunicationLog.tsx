@@ -34,23 +34,23 @@ export function CommunicationLog({ claim, readOnly }: { claim: Claim; readOnly?:
 
   return (
     <Card
-      title="Communication log"
+      title="Contact log"
       icon={MessageSquare}
       actions={!readOnly && claim.status !== 'CLOSED' && <Button size="sm" variant="secondary" icon={Plus} onClick={() => setOpen(true)}>Log a contact</Button>}
     >
       {entries.length === 0 ? (
-        <EmptyState icon={MessageSquare} title="No contacts logged" message="Keep a record of every call, email, and person you speak with. It helps if questions come up later." />
+        <EmptyState icon={MessageSquare} title="No contacts logged" message="Note who you spoke to and when. It helps if questions come up later." />
       ) : (
         <ul className="space-y-3">
           {entries.map((e) => {
             const Icon = CHANNEL_ICONS[e.channel];
             return (
-              <li key={e.id} className="flex gap-3 rounded-lg border border-slate-100 bg-slate-50/60 p-3">
-                <div className="mt-0.5 rounded-full bg-white p-1.5 ring-1 ring-slate-200">
-                  <Icon className="h-4 w-4 text-brand-600" aria-hidden />
+              <li key={e.id} className="flex gap-3 rounded-xl bg-slate-50/80 p-3.5">
+                <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
+                  <Icon className="h-4 w-4" aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1 text-sm">
-                  <p className="font-medium text-slate-900">
+                  <p className="font-semibold text-slate-900">
                     {CHANNEL_LABELS[e.channel]} with {e.contactPerson}
                   </p>
                   <p className="text-xs text-slate-500">
