@@ -91,7 +91,7 @@ export function RulesPanel({ rules }: { rules: RulesResult }) {
         </p>
       )}
 
-      <h3 className="eyebrow mb-1 mt-6">Adjudication checks</h3>
+      <h3 className="eyebrow mb-1 mt-6">Decision checks</h3>
       <ol className="divide-y divide-slate-100">
         {rules.checks.map((c) => {
           const s = CHECK_STYLES[c.status];

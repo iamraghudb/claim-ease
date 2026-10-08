@@ -336,7 +336,7 @@ export function reviewNotes(draft: IntakeDraft, scan: ScanResult): string[] {
   const notes: string[] = [];
   const documentDate = scan.fields.find((f) => f.key === 'dateOfLoss')?.value;
   if (documentDate && /^\d{4}-\d{2}-\d{2}$/.test(documentDate) && draft.dateOfLoss && documentDate !== draft.dateOfLoss) {
-    const what = draft.claimType === 'HEALTH' ? 'date of service' : 'date of loss';
+    const what = draft.claimType === 'HEALTH' ? 'date of service' : 'date it happened';
     notes.push(`The document shows ${fmtDate(documentDate)} but you entered ${fmtDate(draft.dateOfLoss)} as the ${what}. Go back to step 1 if the document is right, because the policy check used your date.`);
   }
   if (draft.claimType === 'HEALTH' && scan.serviceLines.length) {

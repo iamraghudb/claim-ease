@@ -106,8 +106,8 @@ export function AdjudicationPanel({ claim, rules, onRequestInfo, embedded, sugge
 
       {!enabled ? (
         <Alert tone="info" icon={Lock}>
-          You can record a decision once the claim is in <GlossaryTerm id="adjudication">Adjudication</GlossaryTerm>.{' '}
-          {rules.fastTrackEligible ? 'This claim is fast-track eligible, so you can send it straight there.' : 'Resolve the review triggers, then move it to adjudication.'}
+          You can record a decision once the claim is at the <GlossaryTerm id="adjudication">decision</GlossaryTerm> step.{' '}
+          {rules.fastTrackEligible ? 'This claim is fast-track eligible, so you can send it straight there.' : 'Resolve the review triggers, then move it to decision.'}
         </Alert>
       ) : (
         <>

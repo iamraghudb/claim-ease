@@ -11,6 +11,8 @@ import { Button, Card, cx, EmptyState, InfoTip, PageHeader, Pill, Tabs } from '.
 import { GlossaryTerm } from '../../components/GlossaryTerm';
 import { useCopilotPage } from '../copilot/pages';
 import { CostExplainer } from './CostExplainer';
+import { NetworkSavingsCard } from './NetworkSavingsCard';
+import { networkSavings } from './networkSavings';
 import { costContext, healthPageData, remittance } from './remittance';
 
 type Tab = '837' | '277' | '835';
@@ -37,7 +39,7 @@ function statusCategory(status: ClaimStatus): { code: string; label: string } {
   if (['UNDER_REVIEW', 'INVESTIGATION', 'ADJUDICATION', 'APPEALED', 'REOPENED'].includes(status)) return { code: 'P1', label: 'Pending: in process' };
   if (status === 'DENIED') return { code: 'F2', label: 'Finalized: denied' };
   if (['PAID', 'CLOSED'].includes(status)) return { code: 'F1', label: 'Finalized: payment' };
-  return { code: 'F0', label: 'Finalized: adjudication complete, payment pending' };
+  return { code: 'F0', label: 'Finalized: decision made, payment pending' };
 }
 
 export default function HealthClaimView() {
@@ -61,7 +63,7 @@ export default function HealthClaimView() {
             title: `Health claim flow for ${claim.claimNumber}`,
             summary: 'How a health claim moves between patient, provider and insurer, with the 837-style claim, the 277-style status and the 835-style remittance.',
             data: healthPageData(claim, remit, rules.payable, viewing),
-            suggestions: ['What is the 835 remittance?', role === 'CLAIMANT' ? 'Why do I owe this amount?' : 'Why does the patient owe this amount?', 'What happens next?'],
+            suggestions: [role === 'CLAIMANT' ? 'Why do I owe this amount?' : 'Why does the patient owe this amount?', 'How much did the network save?', 'What is the 835 remittance?'],
           }
         : null,
     [claim, rules, remit, viewing, role],
@@ -77,6 +79,7 @@ export default function HealthClaimView() {
   const p = rules.payable;
   const { lines, totals } = remit;
   const owe = costContext(remit, p);
+  const savings = networkSavings(remit);
   const sc = statusCategory(claim.status);
   const subscriber = policy?.members?.find((m) => m.relationship === 'SUBSCRIBER')?.name ?? '—';
 
@@ -214,7 +217,7 @@ export default function HealthClaimView() {
               { label: 'Status effective', value: formatDate(claim.updatedAt) },
               { label: 'Total charge', value: money(totals.billed) },
               { label: 'Payment amount', value: claim.payment ? money(claim.payment.amount) : '—' },
-              { label: 'Adjudication date', value: claim.decision ? formatDate(claim.decision.decidedAt) : '—' },
+              { label: 'Decision date', value: claim.decision ? formatDate(claim.decision.decidedAt) : '—' },
             ]}
           />
         </Card>
@@ -225,7 +228,7 @@ export default function HealthClaimView() {
           {!claim.decision ? (
             <p className="mb-5 flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden />
-              No remittance yet: the claim has not been adjudicated. The figures below are projected from the rules engine.
+              No remittance yet: the claim has not been decided yet. The figures below are projected from the rules engine.
             </p>
           ) : (
             <div className="mb-5">
@@ -259,15 +262,19 @@ export default function HealthClaimView() {
             <Box label="Patient responsibility" value={money(totals.patient)} tone="strong" />
           </div>
 
+          <div className="mt-5">
+            <NetworkSavingsCard savings={savings} role={role} />
+          </div>
+
           {!staff && (
             <div className="mt-5">
               <CostExplainer key={JSON.stringify(owe)} context={owe} forProvider={role === 'PROVIDER'} projected={!claim.decision} />
             </div>
           )}
 
-          <h3 className="eyebrow mb-3 mt-6">Service line adjudication</h3>
+          <h3 className="eyebrow mb-3 mt-6">Line-by-line breakdown</h3>
           <table className="hidden w-full text-sm lg:table">
-            <caption className="sr-only">Service line adjudication</caption>
+            <caption className="sr-only">Line-by-line breakdown</caption>
             <thead>
               <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
                 <th className="py-2 pr-3 font-semibold">Service</th>
@@ -309,7 +316,7 @@ export default function HealthClaimView() {
             </tfoot>
           </table>
 
-          <ul className="space-y-3 lg:hidden" aria-label="Service line adjudication">
+          <ul className="space-y-3 lg:hidden" aria-label="Line-by-line breakdown">
             {lines.map((l, i) => (
               <li key={i} className="rounded-xl border border-slate-200 p-3.5">
                 <p className="text-sm font-medium text-slate-900">

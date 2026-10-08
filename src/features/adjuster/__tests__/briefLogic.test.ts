@@ -35,15 +35,15 @@ describe('awaitsDecision', () => {
 });
 
 describe('briefCta', () => {
-  it('offers to open the decision form, with the choice, only in Adjudication', () => {
+  it('offers to open the decision form, with the choice, only at the decision step', () => {
     expect(briefCta('APPROVE', 'ADJUDICATION', 'ADJUSTER')).toEqual({ kind: 'decide', choice: 'APPROVED', label: 'Go to decision' });
     expect(briefCta('PARTIALLY_APPROVE', 'ADJUDICATION', 'ADMIN')).toMatchObject({ kind: 'decide', choice: 'PARTIALLY_APPROVED' });
     expect(briefCta('DENY', 'ADJUDICATION', 'ADJUSTER')).toMatchObject({ kind: 'decide', choice: 'DENIED' });
   });
 
-  it('explains that a decision has to wait for Adjudication instead of offering a dead button', () => {
+  it('explains that a decision has to wait for the decision step instead of offering a dead button', () => {
     for (const status of ['UNDER_REVIEW', 'INVESTIGATION', 'APPEALED'] as const) {
-      expect(briefCta('APPROVE', status, 'ADJUSTER')).toEqual({ kind: 'hint', text: expect.stringMatching(/Adjudication/) });
+      expect(briefCta('APPROVE', status, 'ADJUSTER')).toEqual({ kind: 'hint', text: expect.stringMatching(/decision step/) });
     }
   });
 

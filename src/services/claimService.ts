@@ -165,7 +165,7 @@ export const claimService = {
     const policy = db.policies.find((p) => p.policyNumber === input.policyNumber);
     if (!policy) throw new ServiceError('Policy not found', 'NOT_FOUND');
     if (policy.status !== 'ACTIVE') throw new ServiceError('Policy is not active');
-    if (!input.dateOfLoss) throw new ServiceError('Date of loss / service is required');
+    if (!input.dateOfLoss) throw new ServiceError('The date it happened is required');
     const now = nowIso();
     const claim: Claim = {
       id: uid('claim'),
@@ -194,7 +194,7 @@ export const claimService = {
       updatedAt: now,
       slaDueDate: now,
     };
-    audit(claim, actor, 'Claim reported (FNOL)', { toStatus: 'REPORTED', details: `Filed via ClaimEase portal by ${actor.name}` });
+    audit(claim, actor, 'Claim filed', { toStatus: 'REPORTED', details: `Filed via ClaimEase portal by ${actor.name}` });
     if (claim.documents.length)
       audit(claim, actor, 'Documents uploaded', { details: `${claim.documents.length} file(s): ${claim.documents.map((d) => d.fileName).join(', ')}` });
     db.claims.push(claim);
@@ -333,8 +333,8 @@ export const claimService = {
     guardStaff(actor);
     const c = find(claimNumber);
     if (c.status === 'UNDER_REVIEW' || c.status === 'INVESTIGATION' || c.status === 'APPEALED')
-      setStatus(c, 'ADJUDICATION', actor, c.status === 'UNDER_REVIEW' ? 'Fast-track to adjudication' : undefined);
-    if (c.status !== 'ADJUDICATION') throw new ServiceError('Claim must be in adjudication to record a decision.', 'CONFLICT');
+      setStatus(c, 'ADJUDICATION', actor, c.status === 'UNDER_REVIEW' ? 'Fast-track to decision' : undefined);
+    if (c.status !== 'ADJUDICATION') throw new ServiceError('The claim must be at the decision step before a decision can be recorded.', 'CONFLICT');
     const r = evaluate(c);
     if (input.outcome === 'DENIED') {
       if (!input.denialReasonCode) throw new ServiceError('A denial requires a reason code.');
@@ -412,7 +412,7 @@ export const claimService = {
     c.decidedAt = undefined;
     startSla(c);
     notify(c, ['ADJUSTER', 'ADMIN'], 'APPEAL', 'Appeal filed', `${actor.name} appealed the ${c.decision.outcome.toLowerCase().replace('_', ' ')} decision.`);
-    notify(c, filerAudience(c), 'APPEAL', 'Appeal received', 'your appeal was received and will be reviewed by a different examiner.');
+    notify(c, filerAudience(c), 'APPEAL', 'Appeal received', 'your appeal was received and will be looked at by a different reviewer.');
     return commit(c);
   },
 

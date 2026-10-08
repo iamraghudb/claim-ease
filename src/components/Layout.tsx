@@ -234,7 +234,7 @@ export function Layout() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 text-white shadow-sm">
               <ShieldCheck className="h-5 w-5" aria-hidden />
             </span>
-            <span className="hidden text-lg font-extrabold tracking-tight text-slate-900 min-[380px]:inline">ClaimEase</span>
+            <span className="hidden text-lg font-extrabold tracking-tight text-slate-900 min-[460px]:inline">ClaimEase</span>
           </Link>
           <nav aria-label="Main" className="ml-6 hidden items-center gap-1 md:flex">
             {nav.map((n) => (

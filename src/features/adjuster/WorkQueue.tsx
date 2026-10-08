@@ -71,7 +71,7 @@ export default function WorkQueue() {
   if (role !== 'ADJUSTER' && role !== 'ADMIN')
     return (
       <Alert tone="info" icon={Lock} title="Adjuster workspace">
-        Switch to the Adjuster / Examiner or Admin role in the header to see the work queue.
+        Switch to the Adjuster or Admin role in the header to see the work queue.
       </Alert>
     );
 

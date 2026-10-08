@@ -38,7 +38,7 @@ export type BriefCta =
 /**
  * The button (or hint) that goes with a recommendation.
  *  - Request information opens the existing modal, when the status machine allows it.
- *  - Approve / partially approve / deny take the adjuster to the decision form, which is only open in Adjudication.
+ *  - Approve / partially approve / deny take the adjuster to the decision form, which is only open at the decision step.
  *  - Investigate and wait just inform.
  */
 export function briefCta(action: BriefAction, status: ClaimStatus, role: Role): BriefCta {
@@ -47,5 +47,5 @@ export function briefCta(action: BriefAction, status: ClaimStatus, role: Role): 
   const choice = decisionFor(action);
   if (!choice) return null;
   if (status === 'ADJUDICATION') return { kind: 'decide', choice, label: 'Go to decision' };
-  return { kind: 'hint', text: 'You can record a decision once the claim is in Adjudication.' };
+  return { kind: 'hint', text: 'You can record a decision once the claim is at the decision step.' };
 }

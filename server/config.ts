@@ -1,14 +1,15 @@
 // Server-side settings. This code runs in Node (inside the Vite dev server), never in the browser.
 
 /**
- * "-latest" always points at Google's current Flash model, so the app keeps working when Google
- * retires an old version. Pin a specific one (e.g. GEMINI_MODEL=gemini-3.8-flash) once you have
- * rehearsed your demo, so nothing changes under you on the day.
+ * The fast, light model goes first: on the free tier the bigger Flash model often queues or returns "busy" for
+ * 10+ seconds, while Flash-Lite answers in about 2 seconds and reads these documents correctly.
+ * "-latest" always points at Google's current model, so the app keeps working when Google retires an old version.
+ * Pin a specific one (GEMINI_MODEL=...) once you have rehearsed your demo, so nothing changes under you on the day.
  */
-export const DEFAULT_MODEL = 'gemini-flash-latest';
+export const DEFAULT_MODEL = 'gemini-flash-lite-latest';
 
 /** Tried in order when the main model is overloaded or out of free quota (each model has its own quota). */
-export const DEFAULT_FALLBACK_MODELS = ['gemini-flash-lite-latest'];
+export const DEFAULT_FALLBACK_MODELS = ['gemini-flash-latest'];
 
 export interface AiConfig {
   /** Empty string means "no key": the AI features answer with clearly-labelled demo data. */

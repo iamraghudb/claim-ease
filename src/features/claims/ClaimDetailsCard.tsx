@@ -9,7 +9,7 @@ export function ClaimDetailsCard({ claim }: { claim: Claim }) {
   const est = (k: string) => (claim.estimatedFields.includes(k) ? <Pill tone="amber">estimated</Pill> : null);
   const d = claim.details;
   const common = [
-    { label: claim.claimType === 'HEALTH' ? 'Date of service' : 'Date of loss', value: <span className="inline-flex items-center gap-2">{formatDate(claim.dateOfLoss)} {est('dateOfLoss')}</span> },
+    { label: claim.claimType === 'HEALTH' ? 'Date of service' : 'Date it happened', value: <span className="inline-flex items-center gap-2">{formatDate(claim.dateOfLoss)} {est('dateOfLoss')}</span> },
     { label: 'Location', value: `${claim.location.city}, ${claim.location.state}` },
     {
       label: claim.claimType === 'HEALTH' ? 'Billed amount' : 'Estimated amount',
@@ -97,7 +97,7 @@ export function ClaimDetailsCard({ claim }: { claim: Claim }) {
         <div className="mt-4 flex flex-wrap gap-2">
           {claim.tags.map((t) => (
             <Pill key={t} tone={t === 'CATASTROPHE' ? 'red' : 'purple'}>
-              {t === 'CATASTROPHE' ? 'Catastrophe event' : t}
+              {t === 'CATASTROPHE' ? 'Storm or disaster' : t}
             </Pill>
           ))}
         </div>

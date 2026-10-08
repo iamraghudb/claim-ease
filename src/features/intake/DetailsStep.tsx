@@ -127,7 +127,7 @@ export function DetailsStep({ draft, setDraft, errors }: Props) {
         {!isHealth && (
           <label className="flex items-start gap-2 self-center text-sm text-slate-700 sm:col-span-1">
             <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-brand-600" checked={draft.catastrophe} onChange={(e) => setDraft({ ...draft, catastrophe: e.target.checked })} />
-            Related to a named storm or declared disaster (catastrophe event)
+            Related to a named storm or declared disaster (storm or disaster)
           </label>
         )}
       </fieldset>

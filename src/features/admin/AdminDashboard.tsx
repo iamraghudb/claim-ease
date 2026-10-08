@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Activity, ChartColumn, CircleAlert, CircleX, ClipboardList, Clock, Database, Gauge, Hourglass, RotateCcw, Settings, Table2, Zap, type LucideIcon } from 'lucide-react';
+import { Activity, BadgeDollarSign, ChartColumn, CircleAlert, CircleX, ClipboardList, Clock, Database, Gauge, Hourglass, RotateCcw, Settings, Table2, Zap, type LucideIcon } from 'lucide-react';
 import { CLAIM_TYPE_LABELS, DELAY_REASON_LABELS } from '../../domain/catalog';
 import { formatUSD } from '../../domain/rulesEngine';
 import { ALL_STATUSES, STATUS_LABELS } from '../../domain/statusMachine';
@@ -17,6 +17,7 @@ import { useCopilotPage } from '../copilot/pages';
 import { AiInsights } from './AiInsights';
 import { dashboardPage } from './aiLogic';
 import { computeDashboardStats, computeFigures } from './stats';
+import { portfolioSavings } from '../health/networkSavings';
 
 // Recharts needs colour strings. Statuses use their own chart colour from badges.tsx; claim types use the
 // brand teal ramp (brand-700 / 500 / 300 in index.css). Axes and grid use slate tints.
@@ -40,6 +41,7 @@ export default function AdminDashboard() {
 
   // The same figures feed Ease's read on operations (see stats.ts), so the cards and the insights always agree.
   const kpi = useMemo(() => computeFigures(claims, rulesMap), [claims, rulesMap]);
+  const savings = useMemo(() => portfolioSavings(claims, rulesMap), [claims, rulesMap]);
   const stats = useMemo(() => computeDashboardStats(claims, config, new Date(), rulesMap), [claims, config, rulesMap]);
   useCopilotPage(loaded ? dashboardPage(stats) : null);
 
@@ -84,13 +86,16 @@ export default function AdminDashboard() {
       <div className="space-y-6">
         <AiInsights stats={stats} />
 
-        <section aria-label="Key figures" data-tour="kpis" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <section aria-label="Key figures" data-tour="kpis" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard icon={ClipboardList} label="Total claims" value={kpi.total} hint={`${kpi.decided} decided`} />
           <StatCard icon={Clock} label="Avg. time to decision" value={kpi.decided && kpi.avgHours !== null ? fmtHours(kpi.avgHours) : '—'} hint="Filing to first decision" />
           <StatCard icon={Zap} tone="emerald" label="Fast-tracked" value={`${kpi.fastPct.toFixed(0)}%`} hint="Eligible or routed" />
           <StatCard icon={CircleAlert} tone="amber" label="Needed more info" value={`${kpi.infoPct.toFixed(0)}%`} hint="Of all claims" />
           <StatCard icon={CircleX} tone="red" label="Denial rate" value={`${kpi.denialRate.toFixed(0)}%`} hint="Of decisions made" />
           <StatCard icon={RotateCcw} label="Appeals" value={kpi.appealed} hint="Claims challenged after a decision" />
+          <div className="sm:col-span-2">
+            <StatCard icon={BadgeDollarSign} tone="emerald" label="Network savings" value={formatUSD(savings.saved)} hint={savings.claims ? `${savings.percent.toFixed(0)}% off billed, ${savings.claims} health ${savings.claims === 1 ? 'claim' : 'claims'}` : 'No health claims counted yet'} />
+          </div>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-5">

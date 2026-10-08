@@ -87,7 +87,7 @@ function parseAnswer(response: GenerateContentResponse): unknown {
 export function createGemini(
   config: AiConfig,
   client: Pick<GoogleGenAI, 'models'> = new GoogleGenAI({ apiKey: config.apiKey }),
-  { retryDelaysMs = [1500, 4000], attemptTimeoutMs = 20_000, lastAttemptTimeoutMs = 60_000 }: GeminiOptions = {},
+  { retryDelaysMs = [1500, 4000], attemptTimeoutMs = 12_000, lastAttemptTimeoutMs = 60_000 }: GeminiOptions = {},
 ): Complete {
   const models = [config.model, ...config.fallbackModels.filter((m) => m !== config.model)];
 

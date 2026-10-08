@@ -1,10 +1,10 @@
 # ClaimEase: AI-Powered Insurance Claims Simplification
 
-**Upload a bill. AI fills in the claim. See exactly where it stands.**
+**One AI guide for every kind of claim. Tell it what happened, or drop a bill. See exactly where it stands.**
 
-ClaimEase is an AI-powered web app that takes the pain out of filing and following an insurance claim. Upload a bill, repair estimate or receipt and AI reads it, fills in the claim form and flags anything it is unsure about. Before you submit, an AI pre-check explains in plain English what is missing and why it matters, so claims arrive complete. After submission, a live status tracker and an AI claim assistant tell claimants where their claim stands and what happens next. Insurers get a rules-driven adjuster workspace with fast-track detection, SLA tracking and a full audit trail.
+Filing and following an insurance claim is confusing, and incomplete claims cause most of the delay. ClaimEase puts an AI guide called **Ease** on every screen. A claimant or provider can just *tell Ease what happened* (or drop a bill, repair estimate or photos) and Ease builds the claim, asks only what is missing, and checks it before it is sent. Adjusters get a short brief and drafted messages for every claim. Operations see what is slowing claims down. Every outcome is still decided by a person and a rules engine.
 
-Healthcare first (provider bills, CPT/ICD-10 service lines, 837/835-style views), plus Auto and Property (Homeowners/Renters) claims.
+It covers **Health** (provider bills, CPT/ICD-10 service lines, 837/835-style views, network savings), **Auto** and **Property** (Homeowners/Renters) claims with the same AI layer.
 
 > **Core principle:** more uncertainty → more investigation and human review. Low-uncertainty claims are flagged **Fast-track eligible**.
 
@@ -14,13 +14,21 @@ All policy and claim data is mock data. There is no real authentication, payment
 
 ## AI features
 
-| Feature | Where | What it does |
-|---|---|---|
-| **Bill / receipt scanner** | Intake → Documents | Reads photos and PDFs, suggests values for the form with a confidence level and where it saw each one. Nothing is applied until the user ticks it. Unsure values are marked *estimated*. Files are auto-labelled (itemized bill, estimate…) so the checklist ticks. |
-| **Pre-submission check** | Intake → Review & submit | Explains in plain English what is missing and why, and catches contradictions (bill total vs lines, injuries vs description). The rules-based checklist keeps the last word on "ready". |
-| **Claim status assistant** | Claim page (claimant / provider) | Answers "where is my claim / what do I do next?" from the claim's real status, timeline and requests. It only sees what the claimant already sees. |
+The AI has one name everywhere: **Ease**.
 
-Every AI result is badged **AI**, or **Demo data** when no key is configured. Setup, architecture and judging talking points are in [docs/AI_GUIDE.md](docs/AI_GUIDE.md).
+| Feature | Who | What it does |
+|---|---|---|
+| **Smart start** | Claimant, provider | Tell Ease what happened (typed or spoken) or drop a bill or photo. Ease fills in the claim, shows it building live ("Your claim so far"), verifies the policy and asks one question at a time. |
+| **Bill, estimate and photo reading** | Claimant, provider | Reads photos and PDFs and suggests values with a confidence level and where each was seen. Nothing is applied until the person agrees. A **photo check** says what is visible, how good each photo is and which shots are missing. |
+| **Pre-submit check** | Claimant, provider | Explains in plain English what is missing and why, and catches contradictions. The rules-based checklist keeps the last word on "ready". |
+| **Ask Ease** (Ctrl/Cmd+K) | Everyone | Knows which screen you are on, explains jargon in context and can take you to the right page. |
+| **Where you stand / Explain this** | Claimant, provider | A plain-English summary of a claim, what a decision means and what the patient owes. |
+| **Appeal help** | Claimant | Drafts an appeal letter for the person to edit. |
+| **Brief and drafts** | Adjuster | What the claim is, the risks, a suggested next step, and drafted decision and information-request messages. The rules engine still decides. |
+| **Insights** | Operations admin | What is slowing claims down, with a concrete suggestion for each. |
+| **Network savings** | Everyone | On health claims, billed against the network rate and what the network saved (not AI: it reuses the fee-schedule maths). Rolled up on the admin dashboard. |
+
+Every AI result is badged **AI**, or **Demo data** when no key is configured. Setup, architecture, the demo script and judging talking points are in [docs/AI_GUIDE.md](docs/AI_GUIDE.md).
 
 ```bash
 copy .env.example .env.local   # then paste your free key after GEMINI_API_KEY=
@@ -49,31 +57,27 @@ Seed data: 3 active policies (Auto `POL-100245`, Homeowners `POL-200318`, Health
 
 ---
 
-## Demo walkthrough for judges (about 6 minutes)
+## Demo walkthrough (about 5 minutes)
+
+The full script, with what to say, is in [docs/AI_GUIDE.md](docs/AI_GUIDE.md#4-demo-script-about-5-minutes). In short:
 
 | # | Persona | Step |
 |---|------|------|
-| 1 | **Healthcare provider** | Switch persona to *Dr. Priya Shah*. Click **Submit a claim**. Choose the sample policy **POL-300577**, set the date of service to **15 Sep 2026** (the sample bill's date) and click **Check policy**. Then **Continue**. |
-| 2 | Provider | **Documents:** click *Download a sample itemized bill* in the indigo AI panel and drop the PDF in. Click **Read 1 document**. Show the confidence pills, the *Seen at* evidence and the warnings, then **Fill in** the suggestions. Nothing changes until you click. |
-| 3 | Provider | **Details:** the *AI filled in N items* banner lists what it did. The patient is picked from the plan and both service lines are in. Everything is editable. |
-| 4 | Provider | **Review and submit:** click **Check my claim**. The AI explains in plain English what is missing (the MRI needs medical records) and why. Submit. The confirmation shows the claim number, status and next steps. |
-| 5 | Claimant | Switch to *Maria Lopez*. Open the claim: the timeline shows exactly where it is. Ask the assistant **What happens next?** |
-| 6 | **Adjuster** | Switch to *Alex Chen* and open the claim from the **Work queue**. Point out the priority and complexity flags, the uncertainty meter, the rules-engine checks (pass/warn/fail with explanations) and the payable calculation. Click **Assign to me**, which starts the review. |
-| 7 | Adjuster | Click **Request info**. *Repair shop estimate* is pre-ticked when the rules engine flagged it as missing. Send the request: the claimant is notified and the SLA shows as *paused*. |
-| 8 | Claimant | The bell shows the request. On the claim page the requested item is highlighted. Upload the file and click **Send to my adjuster**. The claim goes back to *Under review*. |
-| 9 | Adjuster | Click **Send to adjudication**. In the adjudication panel, choose **Partially approve** and change the amount. An override reason is required. Add an explanation and record the decision. |
-| 10 | Claimant | Click **File an appeal**, enter a reason and optional evidence, and submit. The status becomes *Appealed*. |
-| 11 | Adjuster | Re-adjudicate and approve. In the payment panel, queue the payment, then mark it issued (method, amount, date, reference). Close the claim. Open the **Audit trail** tab: every step was logged automatically. |
-| 12 | **Operations admin** | Open the dashboard: KPIs, charts and top delay reasons. Open **Rules & SLA**, lower the auto high-value threshold to $5,000, then go back to the queue. Priorities are recalculated. |
-| 13 | Any | Health: open `CLM-2026-000108` → **837 / 835 view**. It shows the patient → provider → payer flow, an 837-style claim, a 277-style status and an 835-style remittance (billed / allowed / plan paid / patient responsibility). |
+| 1 | Claimant | Open `/welcome`, click **Start as Maria**. **File a claim → Start with Ease**. |
+| 2 | Claimant | Drop `public/samples/sample-itemized-bill.pdf` in the chat. Ease reads it, fills in 11 things and builds **Your claim so far**. Click **Review my claim**. |
+| 3 | Claimant | **Check my claim**: Ease says medical records are required and why. **Submit claim**. |
+| 4 | Claimant | Press **Ctrl+K**, ask "What happens next?". |
+| 5 | **Adjuster** | Switch to *Alex Chen*, open a claim from the **Work queue**: the Ease brief, then **Request info →** tick an item **→ Draft the message with Ease**. |
+| 6 | Any | Open a health claim → **837 / 835 view → Remittance (835)** for **Network savings**. |
+| 7 | **Operations admin** | Switch to *Jordan Rivera*: Ease's insights and the Network savings total. |
 
-Other things to show: the **Claim file** (print-friendly; use Save as PDF), the **contact log**, glossary tooltips (dotted underlines) and the **Help** page.
+Other things to show: the claim **timeline**, the contact log, the printable **Claim file**, glossary tooltips, **Rules & SLA** configuration and **Reset demo data** (Admin).
 
 ---
 
 ## Features
 
-1. **Claim intake wizard** (`features/intake`). Steps: Policy → Documents (upload, AI reads them) → Details (pre-filled, you confirm) → Review & submit.
+1. **Claim intake** (`features/intake`). Two ways in: **Smart start** (talk to Ease; `intake/smart/`) or the **form** (Policy → Documents → Details → Review & submit), which Smart start hands over to with everything prefilled.
    - The fields and required documents change by claim type (Auto: vehicles, other parties, police report. Property: damage type, contractor, receipts. Health: provider-submitted, member, NPI, CPT/ICD service lines).
    - Policy validation: the policy must exist, be ACTIVE, and cover the date of loss.
    - **"I'm not sure"** toggles. Unsure values get partial credit in the readiness score and add a review trigger.
@@ -113,10 +117,10 @@ UI: Tailwind CSS v4, lucide-react icons and color-coded status badges that are t
 
 ```
 server/            runs in Node inside the Vite dev server; holds the API key, never shipped to the browser
-  gemini.ts            the only file that calls Google's Gemini API (structured JSON output, thinking level)
+  gemini.ts            the only file that calls Google's Gemini API (structured JSON output, model failover)
   prompts.ts           every instruction given to the model
-  handlers.ts          scan / gaps / explain: validate input, call the model, sanity-check the output
-  demo.ts              labelled sample answers when no key is set
+  handlers.ts, features.ts   scan / gaps / explain / chat / intake / brief / draft / insights / photo: validate input, call the model, sanity-check the output
+  demo.ts, demoFeatures.ts   labelled sample answers when no key is set
 src/
   domain/          pure TypeScript: no React, no I/O
     types.ts           domain model (Policy, Claim, Document, AuditEntry, …)
@@ -137,7 +141,7 @@ src/
     seed.ts            seed data generated relative to "now"
   store/           Zustand store, hooks (useClaim, useRules), useClaimAction (toasts + pending)
   components/      shared UI (Layout, badges, Timeline, Documents, CommunicationLog, AuditTrail, …)
-  features/        intake · claims · adjuster · admin · health
+  features/        intake · claims · adjuster · admin · health · copilot (Ask Ease) · welcome · tour
   pages/           Home, Glossary
   routes.tsx       React Router (lazy-loaded feature routes)
 ```

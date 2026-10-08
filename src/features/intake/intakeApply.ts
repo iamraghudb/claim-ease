@@ -341,7 +341,7 @@ export function applyScanToDraft(draft: IntakeDraft, scan: ScanResult, ctx: Inta
   const date = scan.fields.find((f) => f.key === 'dateOfLoss');
   if (date && !d.dateOfLoss && isRealDate(date.value) && date.value <= ctx.today && (date.confidence !== 'low' || ctx.role !== 'PROVIDER')) {
     d = addCaptured(setEstimated({ ...d, dateOfLoss: date.value }, 'dateOfLoss', ctx.role === 'PROVIDER' ? 'high' : date.confidence), 'dateOfLoss');
-    labels.unshift(d.claimType === 'HEALTH' ? 'Date of service' : 'Date of loss');
+    labels.unshift(d.claimType === 'HEALTH' ? 'Date of service' : 'Date it happened');
     applied++;
   }
   return { draft: withLabels(d, labels), applied, labels: friendlyLabels(labels) };
@@ -417,7 +417,7 @@ export async function checkPolicy(draft: IntakeDraft, role: Role, lookup: Policy
 // ---------- hand-off to the form ----------
 
 const CAPTURED_LABELS = (health: boolean): Record<string, string> => ({
-  dateOfLoss: health ? 'Date of service' : 'Date of loss',
+  dateOfLoss: health ? 'Date of service' : 'Date it happened',
   city: 'City',
   state: 'State',
   description: health ? 'Clinical summary' : 'Description',

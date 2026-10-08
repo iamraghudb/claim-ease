@@ -19,7 +19,7 @@ You do this part yourself because it is tied to your Google account.
    npm run ai:check
    ```
    You should see three `ok` lines and the fields the AI read from the two sample documents.
-6. Restart `npm run dev` (Ctrl+C, then start it again). The terminal should say `AI: Gemini (gemini-flash-latest)`.
+6. Restart `npm run dev` (Ctrl+C, then start it again). The terminal should say `AI: Gemini (gemini-flash-lite-latest)`.
 
 Rules for the key:
 - Never paste it into chat, a commit, a screenshot or a slide. `.env.local` is git-ignored on purpose.
@@ -93,32 +93,43 @@ How the pieces behave:
 - **Never fake AI.** No key → everything is badged **Demo data**.
 - **Key stays server-side**, and the endpoints only accept `application/json`, which stops other websites from spending your quota through your browser.
 
-## 4. Demo script (about 4 minutes)
+## 4. Demo script (about 5 minutes)
 
-1. Profile menu (top right) → **Switch persona → Dr. Priya Shah**. *Submit a claim → POL-300577 → set the date of service to 15 Sep 2026 → Check policy → Continue.* (The sample bill is dated 09/15/2026.)
-2. On the **Documents** step, download the **sample itemized bill** from the indigo AI panel and drop it in. Click **Read 1 document**. Show the confidence pills, the "Seen at" evidence and the warning if dates differ. Click **Fill in**.
-3. On **Details**, the "AI filled in N items" banner lists what changed: the patient is selected from the plan and both service lines are in. Nothing is applied without a click.
-4. Continue to **Review and submit** → **Check my claim**. The MRI needs medical records, so the check says so, in plain English and why.
-5. Submit. Switch persona to **Maria Lopez**, open the claim → **Ask about this claim** → "What happens next?". Then switch to **Alex Chen** to show the rules workspace and SLA.
+The story: **one AI guide for every kind of claim (Health, Auto and Property)**. It makes claims right the first time, and explains the result in plain English. People always decide.
 
-Auto variant: Maria Lopez → POL-100245 → date 26 Sep 2026 → sample repair estimate (PNG).
+Before you start: `npm run dev`, open <http://localhost:5173/welcome>, and use **Admin → Reset demo data** if the data looks messy. Have the sample bill from `public/samples/` handy.
 
-Rehearse with the real key first and have **demo mode** as your safety net: if the venue wifi dies, remove the key line and restart. Everything still works with clearly labelled sample data.
+1. **Welcome (20 s).** The welcome screen shows the four people. Click **Start as Maria** (claimant).
+2. **Smart start, the hero moment (90 s).** **File a claim → Start with Ease**. Drop `sample-itemized-bill.pdf` into the chat (paperclip). In about 10 seconds Ease reads it, says "I filled in 11 things", and the **Your claim so far** card on the right fills in: verified policy, date, place, visit, patient, services, $1,895. Click **Review my claim**.
+3. **Pre-submit check (30 s).** On **Review and submit** click **Check my claim**. Ease says, in plain English, that medical records are required and why. Tick the box and **Submit claim** (confetti, claim number).
+   *Auto version, if you prefer a conversation:* type "I was rear-ended at a red light on Main Street last Friday. The rear bumper and trunk are crushed and the car is not drivable. Nobody was hurt. Roughly $4,500 in damage." Ease picks the auto policy, works out the date, and says it has what it needs.
+4. **Ask Ease (30 s).** Press **Ctrl+K** (or the **Ask Ease** button) on any screen. Ask "What happens next?". Ease answers from what is on that screen and offers a button to the right page.
+5. **Adjuster (60 s).** Profile menu → **Alex Chen**. Open a claim from the **Work queue**. Show the **Ease brief** (what it is, the risks, a suggested next step), then **Request info**: tick an item and click **Draft the message with Ease**; it writes the message and the adjuster chooses **Use this draft** or **Dismiss**. The rules engine still works out the numbers.
+6. **Network savings (30 s).** Open a health claim → **837 / 835 view → Remittance (835)**. The **Network savings** card shows billed, network rate and what the network saved. Providers see it as their write-off, claimants as the amount they are not charged.
+7. **Operations (30 s).** Profile menu → **Jordan Rivera**. The dashboard shows Ease's read on what is slowing claims down and the **Network savings** total.
+8. **Close (20 s).** "Same guide, same checks, for Auto and Property too: photos of damage get a photo check, repair estimates are read like bills."
+
+Safety net: **demo mode**. If the venue wifi dies, remove the key line from `.env.local` and restart. Everything still works with clearly labelled **Demo data**.
+
+What to say if asked:
+- *Is it safe?* A person decides every outcome. Rules, not the AI, work out payable amounts. Names and IDs are removed before anything reaches the model.
+- *Real data?* Not yet. The free tier is for fictional data only. A real deployment needs an enterprise AI agreement and the right data agreements.
+- *Results?* Not measured yet. We would measure claims right first time, minutes per claim reviewed and support contacts per claim.
 
 ## 5. Speed and reliability on the free tier
 
-Typical answers take 3 to 10 seconds. The free tier is shared, so Google's main Flash model sometimes answers "503: high demand", or holds a request for a minute before failing. The app handles this for you (`server/gemini.ts`):
+Typical answers take 2 to 10 seconds. The free tier is shared, so Google's models sometimes answers "503: high demand", or holds a request for a minute before failing. The app handles this for you (`server/gemini.ts`):
 
-- Models are tried in order: `gemini-flash-latest`, then `gemini-flash-lite-latest` (lighter, separate quota, still reads these documents correctly).
-- A model that does not answer within 20 seconds, is busy, or is out of free quota is abandoned and skipped for a minute, so the next requests go straight to the one that works.
-- The dev terminal prints one line per attempt, for example `[ai] gemini-flash-latest failed with 503 after 2.0s`, then `[ai] gemini-flash-lite-latest answered in 3.8s`. Watch it if something feels slow.
+- Models are tried in order: `gemini-flash-lite-latest` (fast, separate quota, reads these documents correctly), then `gemini-flash-latest` (heavier). The lighter one goes first because on the free tier the heavier one often queues for 10+ seconds or answers "503".
+- A model that does not answer within 12 seconds, is busy, or is out of free quota is abandoned and skipped for a minute, so the next requests go straight to the one that works.
+- The dev terminal prints one line per attempt, for example `[ai] gemini-flash-lite-latest failed with 503 after 2.0s`, then `[ai] gemini-flash-latest answered in 3.8s`. Watch it if something feels slow.
 
 Settings (all optional, in `.env.local`):
 
 | Variable | What it does |
 |---|---|
-| `GEMINI_MODEL` | Main model. Default `gemini-flash-latest` always points at Google's current Flash model, so the app keeps working when Google retires old versions. Once you have rehearsed, pin the exact name you tested (list: <https://ai.google.dev/gemini-api/docs/models>) so nothing changes on demo day. |
-| `GEMINI_FALLBACK_MODELS` | Comma-separated models to try next. Default `gemini-flash-lite-latest`. |
+| `GEMINI_MODEL` | Main model. Default `gemini-flash-lite-latest` always points at Google's current light Flash model, so the app keeps working when Google retires old versions. Once you have rehearsed, pin the exact name you tested (list: <https://ai.google.dev/gemini-api/docs/models>) so nothing changes on demo day. |
+| `GEMINI_FALLBACK_MODELS` | Comma-separated models to try next. Default `gemini-flash-latest`. |
 
 ## 6. If something goes wrong
 

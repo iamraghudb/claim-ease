@@ -183,7 +183,7 @@ export default function ConfigPage() {
             />
           </div>
           <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-            <Info className="h-3.5 w-3.5 shrink-0" aria-hidden /> Duplicate claims (same policy, same date of loss) are always flagged.
+            <Info className="h-3.5 w-3.5 shrink-0" aria-hidden /> Duplicate claims (same policy, same date) are always flagged.
           </p>
         </SettingsCard>
 

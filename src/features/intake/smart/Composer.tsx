@@ -28,6 +28,11 @@ export function Composer({ busy, footer, onSend, onAttach }: ComposerProps) {
   useLayoutEffect(() => {
     const el = field.current;
     if (!el) return;
+    // An empty box is one line. (Measuring it can count the placeholder text and make it needlessly tall.)
+    if (value === '') {
+      el.style.height = '';
+      return;
+    }
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT)}px`;
   }, [value]);

@@ -3,6 +3,7 @@
 
 import { STATUS_LABELS } from '../../domain/statusMachine';
 import type { Claim, HealthLineResult, PayableBreakdown } from '../../domain/types';
+import { networkSavings } from './networkSavings';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -77,6 +78,7 @@ export function healthPageData(claim: Claim, r: Remittance, p: PayableBreakdown,
     viewing,
     decision: claim.decision ? { outcome: claim.decision.outcome, approvedAmount: claim.decision.approvedAmount } : undefined,
     remittance: costContext(r, p),
+    networkSavings: (({ saved, percent, applies }) => ({ saved, percent, applies }))(networkSavings(r)),
     serviceLines: r.lines.map((l) => ({
       procedureCode: l.procedureCode,
       description: l.description,

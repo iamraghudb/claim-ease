@@ -61,7 +61,7 @@ export function ReviewStep({ draft, goTo, rules, readiness, confirmed, setConfir
           items={[
             { label: 'Policy', value: <span className="font-mono">{d.policyNumber}</span> },
             { label: 'Claim type', value: CLAIM_TYPE_LABELS[d.claimType] },
-            { label: d.claimType === 'HEALTH' ? 'Date of service' : 'Date of loss', value: <>{formatDate(d.dateOfLoss)}{est('dateOfLoss')}</> },
+            { label: d.claimType === 'HEALTH' ? 'Date of service' : 'Date it happened', value: <>{formatDate(d.dateOfLoss)}{est('dateOfLoss')}</> },
           ]}
         />
       </Section>
@@ -109,7 +109,7 @@ export function ReviewStep({ draft, goTo, rules, readiness, confirmed, setConfir
                   ]),
             { label: 'Location', value: `${d.location.city}, ${d.location.state}` },
             { label: d.claimType === 'HEALTH' ? 'Total billed' : 'Estimated amount', value: <>{formatUSD(draftAmount(d))}{est('estimatedAmount')}</> },
-            { label: 'Catastrophe event', value: d.catastrophe ? 'Yes' : 'No' },
+            { label: 'Storm or disaster', value: d.catastrophe ? 'Yes' : 'No' },
           ]}
         />
         <p className="mt-4 whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{d.incidentDescription || 'No description provided.'}</p>

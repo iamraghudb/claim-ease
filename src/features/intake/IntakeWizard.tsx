@@ -23,13 +23,13 @@ const STEPS = ['Policy', 'Documents', 'Details', 'Review'];
 
 const STEP_TIPS = [
   'Your policy number is on your insurance card or declarations page.',
-  'Clear photos and the full bill help most. The AI reads them so you do not have to type.',
+  'Clear photos and the full bill help most. Ease reads them so you do not have to type.',
   'Not sure of a value? Tick "I\'m not sure". It is more honest than guessing, and a person will double-check it.',
   'A quick read-through now saves a follow-up question later.',
 ];
 
 const STEP_SUMMARIES = [
-  'Policy: the policy number and the date of loss or service, which are checked against the coverage period.',
+  'Policy: the policy number and the date it happened, which are checked against the coverage period.',
   'Documents: uploading bills, estimates and photos. Ease can read them and offer to fill in the details.',
   'Details: what happened, with each value checked, and "I\'m not sure" boxes for anything uncertain.',
   'Review: a last look at everything, then the claim is submitted.',

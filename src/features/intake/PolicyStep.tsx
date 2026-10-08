@@ -28,7 +28,7 @@ export function PolicyStep({ draft, setDraft, role }: { draft: IntakeDraft; setD
   async function lookup() {
     setError('');
     if (!draft.dateOfLoss) {
-      setError(`Enter the ${role === 'PROVIDER' ? 'date of service' : 'date of loss'} so we can check coverage.`);
+      setError(`Enter the ${role === 'PROVIDER' ? 'date of service' : 'date it happened'} so we can check coverage.`);
       return;
     }
     setLoading(true);
@@ -109,7 +109,7 @@ export function PolicyStep({ draft, setDraft, role }: { draft: IntakeDraft; setD
           />
         </Field>
         <div>
-          <Field label={role === 'PROVIDER' ? 'Date of service' : 'Date of loss'} htmlFor="dateOfLoss" required>
+          <Field label={role === 'PROVIDER' ? 'Date of service' : 'Date it happened'} htmlFor="dateOfLoss" required>
             <input id="dateOfLoss" type="date" className="input" max={todayIso()} value={draft.dateOfLoss} onChange={(e) => setDraft({ ...draft, dateOfLoss: e.target.value, policy: undefined })} />
           </Field>
           {role !== 'PROVIDER' && <EstimatedToggle checked={draft.estimatedFields.includes('dateOfLoss')} onChange={(v) => setDraft(toggleEstimated(draft, 'dateOfLoss', v))} />}

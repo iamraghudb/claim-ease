@@ -87,7 +87,7 @@ describe("Ease's brief", () => {
   it('offers the decision form for a decision, and only informs for investigate or wait', () => {
     hooks.resource = { ...hooks.resource, data: brief('DENY') };
     expect(renderBrief('ADJUDICATION')).toContain('Go to decision');
-    expect(renderBrief('UNDER_REVIEW')).toContain('once the claim is in Adjudication');
+    expect(renderBrief('UNDER_REVIEW')).toContain('once the claim is at the decision step');
     expect(renderBrief('UNDER_REVIEW')).not.toContain('Go to decision');
     hooks.resource = { ...hooks.resource, data: brief('INVESTIGATE') };
     expect(renderBrief('ADJUDICATION')).not.toContain('Go to decision');

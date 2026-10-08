@@ -8,7 +8,7 @@ import { PhotoCheck } from './PhotoCheck';
 const PHOTO_TIPS: Record<string, string[]> = {
   AUTO: ['All four corners of the vehicle', 'Close-ups of every damaged area', 'The other vehicle and its plate', 'The scene, road and traffic signals'],
   PROPERTY: ['A wide shot of each affected room', 'Close-ups of damage and the source (a pipe, the roof)', 'Damaged items before you throw them away', 'A short walk-through video'],
-  HEALTH: ['The itemized bill (CMS-1500 or UB-04)', 'Clinical notes that support the treatment', 'Referral or prior authorization, if there is one'],
+  HEALTH: ['The itemized bill from the provider', 'Clinical notes that support the treatment', 'A referral or approval from your insurer, if there was one'],
 };
 
 export function DocumentsStep({ draft, setDraft }: { draft: IntakeDraft; setDraft: (d: IntakeDraft) => void }) {

@@ -96,7 +96,7 @@ export function AppealModal({ claim, open, onClose }: { claim: Claim; open: bool
     >
       <div className="space-y-4">
         <Alert tone="info">
-          An <GlossaryTerm id="appeal">appeal</GlossaryTerm> asks us to take another look. A different examiner will review it. Explain what you think is wrong and attach new evidence, such as a second estimate or records.
+          An <GlossaryTerm id="appeal">appeal</GlossaryTerm> asks us to take another look. A different reviewer will look at it. Explain what you think is wrong and attach new evidence, such as a second estimate or records.
         </Alert>
         <Field label="Reason for appeal" htmlFor="appeal-reason" required error={error || undefined}>
           <textarea

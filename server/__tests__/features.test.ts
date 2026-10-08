@@ -164,6 +164,21 @@ describe('intake (Smart start)', () => {
     expect(r.reply).toMatch(/when did it happen/i); // and moves on to the next question
   });
 
+  it('fixes the reply and drops policy buttons when the model chose the policy but still asked which one', async () => {
+    const both = { reply: 'So sorry. Which of your policies should we use?', fields: [{ key: 'policyNumber', value: 'POL-100245', confidence: 'high' }, { key: 'vehicleDamage', value: 'Bumper', confidence: 'high' }], quickReplies: ['Auto, Toyota RAV4', 'Home', 'Yes'], done: false, stillNeeded: [] };
+    const r = await fake(both).handlers.intake(intakeBody([{ role: 'user', text: 'I was rear-ended' }]));
+    expect(r.reply).not.toMatch(/which of your/i);
+    expect(r.reply).toContain('Auto, Toyota RAV4');
+    expect(r.quickReplies).toEqual(['Yes']);
+  });
+
+  it('does not re-confirm a policy that is already chosen, however the model words it', async () => {
+    const known = { policyNumber: 'POL-100245', dateOfLoss: '2026-10-02', description: 'Rear-ended', vehicleDamage: 'Rear bumper', drivable: 'no', injuries: 'no', amountClaimed: '4500' };
+    const r = await fake({ reply: 'Since you have both an auto policy and other coverage, is this for your Toyota RAV4?', fields: [], quickReplies: [], done: true, stillNeeded: [] }).handlers.intake(intakeBody([{ role: 'user', text: 'about 4500' }], { known }));
+    expect(r.reply).not.toMatch(/is this for/i);
+    expect(r.reply).toContain('Auto, Toyota RAV4');
+  });
+
   it('does not guess a policy when two could fit', async () => {
     const twoAutos = [...policies, { policyNumber: 'POL-100999', type: 'AUTO' as const, label: 'Auto, Honda Civic' }];
     const r = await fake({ reply: 'Which car was it?', fields: [{ key: 'vehicleDamage', value: 'Bumper', confidence: 'high' }], quickReplies: [], done: false, stillNeeded: [] }).handlers.intake(intakeBody([{ role: 'user', text: 'my bumper' }], { policies: twoAutos }));
@@ -324,6 +339,13 @@ describe('insights', () => {
     expect(r.insights).toHaveLength(4);
     expect(r.insights[0].tone).toBe('watch');
     expect(r.answer).toBe('Because.');
+  });
+
+  it('never lets a code-style field name reach the screen', async () => {
+    const { handlers } = fake({ headline: 'Calm week.', insights: [{ title: 'Clean record', detail: 'Both slaAtRisk and slaOverdue are at zero, while fastTrackPct is high.', tone: 'good', suggestion: 'Keep going.' }], answer: 'Check slaOverdue first, on your iPhone.' });
+    const r = await handlers.insights({ stats, question: 'How are we doing?', history: [] });
+    expect(r.insights[0].detail).toBe('Both SLA at risk and SLA overdue are at zero, while fast track pct is high.');
+    expect(r.answer).toBe('Check SLA overdue first, on your iPhone.');
   });
 
   it('demo mode summarises the numbers', async () => {

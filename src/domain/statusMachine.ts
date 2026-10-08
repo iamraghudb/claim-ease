@@ -18,13 +18,13 @@ export const TRANSITIONS: Record<ClaimStatus, Transition[]> = {
   UNDER_REVIEW: [
     { to: 'INFORMATION_REQUIRED', label: 'Request information', roles: STAFF },
     { to: 'INVESTIGATION', label: 'Move to investigation', roles: STAFF },
-    { to: 'ADJUDICATION', label: 'Send to adjudication', roles: STAFF },
+    { to: 'ADJUDICATION', label: 'Move to decision', roles: STAFF },
   ],
   INFORMATION_REQUIRED: [
     { to: 'UNDER_REVIEW', label: 'Submit requested information', roles: [...STAFF, ...FILERS] },
   ],
   INVESTIGATION: [
-    { to: 'ADJUDICATION', label: 'Send to adjudication', roles: STAFF },
+    { to: 'ADJUDICATION', label: 'Move to decision', roles: STAFF },
     { to: 'INFORMATION_REQUIRED', label: 'Request information', roles: STAFF },
   ],
   ADJUDICATION: [
@@ -43,7 +43,7 @@ export const TRANSITIONS: Record<ClaimStatus, Transition[]> = {
     { to: 'CLOSED', label: 'Close claim', roles: STAFF },
   ],
   APPEALED: [
-    { to: 'ADJUDICATION', label: 'Re-adjudicate', roles: STAFF },
+    { to: 'ADJUDICATION', label: 'Review again', roles: STAFF },
     { to: 'UNDER_REVIEW', label: 'Return to review', roles: STAFF },
   ],
   PAYMENT_PENDING: [{ to: 'PAID', label: 'Mark payment issued', roles: STAFF }],

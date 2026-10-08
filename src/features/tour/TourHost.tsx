@@ -10,6 +10,8 @@ import { useTourStore } from './tourStore';
 
 /** How long to wait for a step's target to show up (a page may still be loading) before showing a centred card. */
 const FIND_TIMEOUT_MS = 2000;
+/** If the anchor is already on the page but not visible, it is hidden by the layout: give up quickly. */
+const HIDDEN_GRACE_MS = 500;
 const POLL_MS = 100;
 /** Entrance animations and late layout shifts can move a target after we first measured it. */
 const REMEASURE_MS = [80, 250, 500, 900];
@@ -165,7 +167,8 @@ function TourOverlay() {
       poll = window.setInterval(() => {
         if (cancelled) return;
         if (look()) window.clearInterval(poll);
-        else if (Date.now() - started > FIND_TIMEOUT_MS) {
+        else if (Date.now() - started > FIND_TIMEOUT_MS || (Date.now() - started > HIDDEN_GRACE_MS && document.querySelector(`[data-tour="${step.target}"]`))) {
+          // Not found in time, or the page has drawn it but the layout hides it (a desktop-only table on a phone): fall back to the plain card.
           window.clearInterval(poll);
           setResolution({ id: step.id, phase: 'missing' });
         }

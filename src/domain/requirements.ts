@@ -58,7 +58,7 @@ export function requiredDocumentCategories(_claimType: ClaimType, details: Claim
     details.serviceType === 'PRE_SERVICE' ||
     details.lines.some((l) => findProcedure(l.procedureCode)?.requiresMedicalRecord);
   return [
-    { category: 'INVOICE', label: 'Itemized bill (CMS-1500 / UB-04)', required: true },
+    { category: 'INVOICE', label: 'Itemized bill', required: true },
     { category: 'MEDICAL_RECORD', label: 'Medical records / clinical notes', required: needsRecords },
   ];
 }
@@ -83,7 +83,7 @@ export function getRequirements(claim: ClaimLike): Requirement[] {
   });
 
   const reqs: Requirement[] = [
-    field('dateOfLoss', claim.claimType === 'HEALTH' ? 'Date of service' : 'Date of loss', claim.dateOfLoss),
+    field('dateOfLoss', claim.claimType === 'HEALTH' ? 'Date of service' : 'Date it happened', claim.dateOfLoss),
     field('location', 'Location (city & state)', claim.location.city && claim.location.state ? 'ok' : ''),
     field(
       'incidentDescription',

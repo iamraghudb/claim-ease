@@ -501,7 +501,7 @@ describe('hand-off to the form', () => {
   const built = () => verified(apply(fresh(), [f('policyNumber', 'POL-100245'), f('dateOfLoss', '2026-09-26'), f('description', 'Rear-ended at a red light.'), f('vehicleDamage', 'Rear bumper'), f('drivable', 'no'), f('city', 'Austin')]), 'POL-100245');
 
   it('lists what was filled in, with friendly names, for the Details step banner', () => {
-    expect(capturedLabels(built())).toEqual(expect.arrayContaining(['Policy', 'Date of loss', 'Description', 'Vehicle damage', 'Drivable', 'City']));
+    expect(capturedLabels(built())).toEqual(expect.arrayContaining(['Policy', 'Date it happened', 'Description', 'Vehicle damage', 'Drivable', 'City']));
     expect(capturedLabels(built())).not.toContain('Estimated amount');
     expect(new Set(capturedLabels(built())).size).toBe(capturedLabels(built()).length);
   });

@@ -42,9 +42,9 @@ export interface RulesContext {
 // ---------- 1. Policy active on date of loss ----------
 
 export function checkPolicyActive(policy: Policy | undefined, dateOfLoss: string): CheckResult {
-  const base = { id: 'POLICY_ACTIVE' as const, label: 'Policy active on date of loss / service' };
+  const base = { id: 'POLICY_ACTIVE' as const, label: 'Policy active on the date it happened' };
   if (!policy) return { ...base, status: 'FAIL', explanation: 'No matching policy was found.' };
-  if (!dateOfLoss) return { ...base, status: 'WARN', explanation: 'Date of loss / service is missing.' };
+  if (!dateOfLoss) return { ...base, status: 'WARN', explanation: 'The date of the loss or service is missing.' };
   const d = toDate(dateOfLoss);
   const inPeriod = d >= toDate(policy.effectiveDate) && d <= toDate(policy.expiryDate);
   if (!inPeriod)
@@ -492,7 +492,7 @@ export function detectTriggers(
     triggers.push({
       code: 'FRAUD_DUPLICATE',
       label: 'Possible duplicate claim',
-      explanation: `${dup.claimNumber} on the same policy has the same date of loss (${claim.dateOfLoss}).`,
+      explanation: `${dup.claimNumber} on the same policy has the same date (${claim.dateOfLoss}).`,
       weight: 25,
       delayReason: 'FRAUD_INVESTIGATION',
     });
@@ -511,7 +511,7 @@ export function detectTriggers(
   if (tags.includes('CATASTROPHE'))
     triggers.push({
       code: 'CATASTROPHE',
-      label: 'Catastrophe event',
+      label: 'Storm or disaster',
       explanation: 'Claim is tagged to a declared catastrophe event; expect higher volume and field inspections.',
       weight: 10,
       delayReason: 'CATASTROPHE_VOLUME',
@@ -578,7 +578,7 @@ export function evaluateClaim(claim: EvaluableClaim, policy: Policy | undefined,
     label: 'Needs manual review?',
     status: fastTrackEligible ? 'PASS' : anyFail || complexity === 'HIGH' ? 'FAIL' : 'WARN',
     explanation: fastTrackEligible
-      ? 'Low uncertainty — fast-track eligible. Can be adjudicated without investigation.'
+      ? 'Low uncertainty — fast-track eligible. Can be decided without investigation.'
       : triggers.length
         ? `Human review required (${complexity.toLowerCase()} complexity): ${triggers.map((t) => t.label).join(', ')}.`
         : anyFail

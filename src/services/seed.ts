@@ -201,7 +201,7 @@ export function buildSeed(now: Date = new Date()): Database {
         timestamp: at(h),
         actor: actor ?? (status === 'REPORTED' ? filer : 'ClaimEase'),
         role: isSystem ? (status === 'REPORTED' ? s.initiatorRole : 'SYSTEM') : actor === filer ? s.initiatorRole : 'ADJUSTER',
-        action: prev ? 'Status changed' : 'Claim reported (FNOL)',
+        action: prev ? 'Status changed' : 'Claim filed',
         fromStatus: prev,
         toStatus: status,
         details,

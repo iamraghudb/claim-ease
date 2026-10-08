@@ -40,7 +40,7 @@ import { HttpError } from './errors';
 import { BRIEF_SYSTEM, copilotSystem, draftSystem, INSIGHTS_SYSTEM, INTAKE_SYSTEM, PHOTO_SYSTEM } from './prompts';
 import { BRIEF_SCHEMA, COPILOT_SCHEMA, DRAFT_SCHEMA, INSIGHTS_SCHEMA, INTAKE_SCHEMA, PHOTO_SCHEMA } from './schemas';
 import type { Complete, Part } from './types';
-import { asArray, bad, clip, isRecord, LIMITS, oneLine, parseContext, tagged } from './util';
+import { asArray, bad, clip, isRecord, LIMITS, oneLine, parseContext, plain, tagged } from './util';
 
 const ROLES: Role[] = ['CLAIMANT', 'PROVIDER', 'ADJUSTER', 'ADMIN'];
 const CLAIM_TYPES: ClaimType[] = ['AUTO', 'PROPERTY', 'HEALTH'];
@@ -83,15 +83,15 @@ export function parseCopilotRequest(body: unknown): CopilotRequest {
 
 export function normalizeCopilot(raw: unknown, role: Role): CopilotResult {
   const r = isRecord(raw) ? raw : {};
-  const answer = clip(r.answer, 1200);
+  const answer = plain(r.answer, 1200);
   if (!answer) throw new HttpError(502, 'The AI returned an empty answer. Try again.');
   const actions: CopilotAction[] = asArray(r.actions)
     .filter(isRecord)
-    .map((a) => ({ label: oneLine(a.label, 40), to: clip(a.to, 120) }))
+    .map((a) => ({ label: oneLine(a.label, 40), to: plain(a.to, 120) }))
     // The model may only send people to real pages.
     .filter((a) => a.label !== '' && isAllowedPath(role, a.to))
     .slice(0, 2);
-  return { source: 'ai', answer, followUps: asArray(r.followUps).map((q) => clip(q, 120)).filter(Boolean).slice(0, 3), actions };
+  return { source: 'ai', answer, followUps: asArray(r.followUps).map((q) => plain(q, 120)).filter(Boolean).slice(0, 3), actions };
 }
 
 // ---------- Smart start ----------
@@ -250,15 +250,23 @@ export function normalizeIntake(raw: unknown, req: IntakeRequest): IntakeResult 
   const missing = missingEssentials(merged, req.documents.length > 0, !modelDone);
   const done = modelDone && missing.length === 0;
 
-  // If we chose the policy but the model was still asking which one, say the right thing instead.
+  // Once a policy is settled (by the person, the model or our backstop), the model must not keep asking which one,
+  // and policy-choice buttons would only confuse. Say the right thing instead.
+  const settled = req.policies.find((p) => p.policyNumber === merged.policyNumber);
   let finalReply = reply;
-  if (chosenByUs && /\bwhich\b.*\bpolic/i.test(reply)) finalReply = `Thanks, I'll use your ${chosenByUs.label} policy. ${missing[0]?.ask ?? 'That is everything I need.'}`;
+  if (settled && reply.includes('?') && (/\bpolic(y|ies)\b/i.test(reply) || reply.toLowerCase().includes(settled.label.toLowerCase()) || /\b(is|was) this for your\b/i.test(reply))) finalReply = `Thanks, I'll use your ${settled.label} policy. ${missing[0]?.ask ?? 'That is everything I need.'}`;
+  const policyLabels = new Set(req.policies.map((p) => p.label.toLowerCase()));
+  const quickReplies = asArray(r.quickReplies)
+    .map((q) => oneLine(q, 40))
+    .filter(Boolean)
+    .filter((q) => !(settled && policyLabels.has(q.toLowerCase())))
+    .slice(0, 4);
 
   return {
     source: 'ai',
     reply: finalReply,
     fields,
-    quickReplies: asArray(r.quickReplies).map((q) => oneLine(q, 40)).filter(Boolean).slice(0, 4),
+    quickReplies,
     done,
     // Always plain labels worked out from the rules above, never the model's own wording.
     stillNeeded: done ? [] : missing.map((m) => m.label),
@@ -282,15 +290,15 @@ export function normalizeBrief(raw: unknown, ctx: StaffClaimContext): BriefResul
   const severities = ['low', 'medium', 'high'] as const;
   return {
     source: 'ai',
-    headline: clip(r.headline, 160),
-    summary: clip(r.summary, 700),
+    headline: plain(r.headline, 160),
+    summary: plain(r.summary, 700),
     risks: asArray(r.risks)
       .filter(isRecord)
       .slice(0, 4)
-      .map((k) => ({ title: oneLine(k.title, 80), plain: clip(k.plain, 260), severity: severities.find((s) => s === k.severity) ?? 'medium' }))
+      .map((k) => ({ title: oneLine(k.title, 80), plain: plain(k.plain, 260), severity: severities.find((s) => s === k.severity) ?? 'medium' }))
       .filter((k) => k.title !== ''),
-    recommended: { action, why: clip(rec.why, 260) },
-    verify: asArray(r.verify).map((v) => clip(v, 140)).filter(Boolean).slice(0, 3),
+    recommended: { action, why: plain(rec.why, 260) },
+    verify: asArray(r.verify).map((v) => plain(v, 140)).filter(Boolean).slice(0, 3),
   };
 }
 
@@ -312,13 +320,13 @@ export function normalizeInsights(raw: unknown): InsightsResult {
   const tones = ['good', 'watch', 'risk'] as const;
   return {
     source: 'ai',
-    headline: clip(r.headline, 220),
+    headline: plain(r.headline, 220),
     insights: asArray(r.insights)
       .filter(isRecord)
       .slice(0, 4)
-      .map((i) => ({ title: oneLine(i.title, 80), detail: clip(i.detail, 300), tone: tones.find((t) => t === i.tone) ?? 'watch', suggestion: clip(i.suggestion, 220) }))
+      .map((i) => ({ title: oneLine(i.title, 80), detail: plain(i.detail, 300), tone: tones.find((t) => t === i.tone) ?? 'watch', suggestion: plain(i.suggestion, 220) }))
       .filter((i) => i.title !== ''),
-    answer: clip(r.answer, 800),
+    answer: plain(r.answer, 800),
   };
 }
 
@@ -403,7 +411,7 @@ export function createFeatureHandlers(complete: Complete | null) {
       if (!complete) return demoDraft(req);
       const text = `${tagged('facts', req.context)}${req.notes ? `\n\nThe person's own notes (build on these):\n${req.notes}` : ''}\n\nWrite the draft.`;
       const raw = await complete({ system: draftSystem(req.kind), parts: [{ kind: 'text', text }], schema: DRAFT_SCHEMA, effort: 'low', maxTokens: 3000 });
-      const out = isRecord(raw) ? clip(raw.text, 2500) : '';
+      const out = isRecord(raw) ? plain(raw.text, 2500) : '';
       if (!out) throw new HttpError(502, 'The AI returned an empty draft. Try again.');
       return { source: 'ai', text: out };
     },

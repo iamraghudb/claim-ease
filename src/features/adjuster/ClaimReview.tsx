@@ -65,23 +65,23 @@ interface Cta {
 const NEXT_STEP: Record<ClaimStatus, { title: string; hint: string }> = {
   REPORTED: { title: 'Register this claim', hint: 'Issue the claim number and queue it for review.' },
   REGISTERED: { title: 'Start the review', hint: 'Check the rules-engine results, documents and policy.' },
-  UNDER_REVIEW: { title: 'Review, then move it on', hint: 'Work through the checks. Send it to adjudication, investigate, or ask for more information.' },
+  UNDER_REVIEW: { title: 'Review, then move it on', hint: 'Work through the checks. Move it to a decision, investigate, or ask for more information.' },
   INFORMATION_REQUIRED: { title: 'Waiting on the claimant', hint: 'The SLA clock is paused. Resume the review once the items arrive.' },
-  INVESTIGATION: { title: 'Finish the investigation', hint: 'Record any expert input, then send the claim to adjudication.' },
+  INVESTIGATION: { title: 'Finish the investigation', hint: 'Record any expert input, then move the claim to a decision.' },
   ADJUDICATION: { title: 'Record a decision', hint: 'Approve, partially approve or deny. Or ask the claimant for more information.' },
   APPROVED: { title: 'Queue the payment', hint: 'The claim is approved. Start the payout when you are ready.' },
   PARTIALLY_APPROVED: { title: 'Queue the payment', hint: 'You can pay the undisputed amount now. The claimant may still appeal.' },
   DENIED: { title: 'Decision recorded', hint: 'The claimant can appeal. Close the claim when you are done.' },
-  APPEALED: { title: 'Review the appeal', hint: 'Re-adjudicate the claim, or return it to review for a fresh look.' },
+  APPEALED: { title: 'Review the appeal', hint: 'Decide it again, or return it to review for a fresh look.' },
   PAYMENT_PENDING: { title: 'Issue the payment', hint: 'Enter the payment details, then mark the payment as issued.' },
   PAID: { title: 'Close the claim', hint: 'Payment has been issued. Nothing else is outstanding.' },
   CLOSED: { title: 'This claim is closed', hint: 'Reopen it if new information comes in.' },
   REOPENED: { title: 'Claim reopened', hint: 'Start a review to pick it back up.' },
 };
 
-const TAG_LABELS: Record<string, string> = { CATASTROPHE: 'Catastrophe event', LEGAL: 'Attorney involved' };
+const TAG_LABELS: Record<string, string> = { CATASTROPHE: 'Storm or disaster', LEGAL: 'Attorney involved' };
 const FLAGS = [
-  { tag: 'CATASTROPHE', label: 'Catastrophe event', hint: 'Marks the claim urgent and adds review weight.' },
+  { tag: 'CATASTROPHE', label: 'Storm or disaster', hint: 'Marks the claim urgent and adds review weight.' },
   { tag: 'LEGAL', label: 'Attorney involved', hint: 'Communication must go through counsel.' },
 ];
 const DECISION_STATUSES: ClaimStatus[] = ['UNDER_REVIEW', 'INVESTIGATION', 'ADJUDICATION', 'APPEALED'];
@@ -109,7 +109,7 @@ export default function ClaimReview() {
   if (role !== 'ADJUSTER' && role !== 'ADMIN')
     return (
       <Alert tone="info" icon={Lock} title="Adjuster workspace">
-        Switch to the Adjuster / Examiner or Admin role in the header to review claims. <Link className="underline" to={`/claims/${claimNumber}`}>View as claimant instead</Link>.
+        Switch to the Adjuster or Admin role in the header to review claims. <Link className="underline" to={`/claims/${claimNumber}`}>View as claimant instead</Link>.
       </Alert>
     );
   if (!claim || !rules) return <EmptyState icon={FolderOpen} title="Claim not found" message="We could not find that claim. It may have been removed." action={<ButtonLink to="/queue">Back to work queue</ButtonLink>} />;
@@ -141,10 +141,10 @@ export default function ClaimReview() {
     { key: 'INVESTIGATION', label: 'Investigate', icon: Search, enabled: can('INVESTIGATION'), onClick: () => move('INVESTIGATION', 'Moved to investigation'), why: 'Only from Under review' },
     {
       key: 'ADJUDICATION',
-      label: claim.status === 'APPEALED' ? 'Re-adjudicate' : rules.fastTrackEligible && claim.status === 'UNDER_REVIEW' ? 'Fast-track to adjudication' : 'Send to adjudication',
+      label: claim.status === 'APPEALED' ? 'Review again' : rules.fastTrackEligible && claim.status === 'UNDER_REVIEW' ? 'Fast-track to decision' : 'Move to decision',
       icon: Gavel,
       enabled: can('ADJUDICATION'),
-      onClick: () => move('ADJUDICATION', 'Sent to adjudication', claim.status === 'UNDER_REVIEW' && rules.fastTrackEligible ? 'Fast-track: no review triggers' : undefined),
+      onClick: () => move('ADJUDICATION', 'Moved to decision', claim.status === 'UNDER_REVIEW' && rules.fastTrackEligible ? 'Fast-track: no review triggers' : undefined),
       why: 'Only from Under review, Investigation or Appealed',
     },
     { key: 'CLOSED', label: 'Close claim', icon: Lock, enabled: can('CLOSED'), onClick: () => move('CLOSED', 'Claim closed', claim.status === 'PAID' ? 'Payment complete' : undefined), why: 'Only after payment or denial' },
