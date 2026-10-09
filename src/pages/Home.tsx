@@ -14,7 +14,7 @@ import ProviderHome from '../features/provider/ProviderHome';
 const STEPS = [
   { icon: Upload, title: 'Upload your bill', body: 'Drop in a photo or PDF of the bill, estimate or receipt. Or just tell Ease what happened.' },
   { icon: ScanText, title: 'Ease fills in the claim', body: 'Ease reads it and suggests every value. You check each one before anything is sent.' },
-  { icon: Route, title: 'Track it live', body: 'See exactly where your claim is, and what happens next, in plain English.' },
+  { icon: Route, title: 'Track it live', body: 'See exactly where your claim is, and what happens next.' },
 ];
 
 function HowItWorks() {

@@ -20,7 +20,7 @@ export const WELCOME_PERSONAS: WelcomePersona[] = [
     roleLabel: 'Claimant',
     tone: 'teal',
     story: 'I have a claim to file.',
-    sees: 'A friendly way to file, a live tracker for each claim, and updates in plain English.',
+    sees: 'A friendly way to file, a live tracker for each claim, and clear updates at every step.',
   },
   {
     role: 'PROVIDER',

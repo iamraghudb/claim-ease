@@ -7,7 +7,7 @@ import { useAiStatus } from '../../store/useAiStatus';
 import { Button, Card, DescriptionList, Pill } from '../../components/ui';
 import { useCopilotStore } from '../copilot/copilotStore';
 
-const EXPLAIN_QUESTION = 'Explain this decision to me in plain English: what was decided, why, and what I can do next.';
+const EXPLAIN_QUESTION = 'Explain this decision to me: what was decided, why, and what I can do next.';
 
 /**
  * `canExplain` adds an "Explain this to me" button for claimant and provider views. It hands the question to Ease, which

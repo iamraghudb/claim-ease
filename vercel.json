@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/((?!api/|assets/|samples/).*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/((?!api/|assets/|samples/).*)", "destination": "/index.html" }],
+  "functions": {
+    "api/ai/[...path].js": { "maxDuration": 60 }
+  }
 }

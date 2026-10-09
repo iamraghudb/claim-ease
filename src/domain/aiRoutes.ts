@@ -29,7 +29,7 @@ export const SITE_MAP: Record<Role, { path: string; what: string }[]> = {
     { path: '/claims', what: 'My claims: every claim with its progress' },
     { path: '/claims/<claim number>', what: "One claim's tracker, decision, documents and activity (only use claim numbers you were given)" },
     { path: '/notifications', what: 'All notifications' },
-    { path: '/glossary', what: 'Help and plain-English glossary of insurance terms' },
+    { path: '/glossary', what: 'Help and glossary of insurance terms' },
   ],
   PROVIDER: [
     { path: '/', what: 'Home: submitted claims, anything needing attention, recent updates' },
@@ -39,7 +39,7 @@ export const SITE_MAP: Record<Role, { path: string; what: string }[]> = {
     { path: '/claims', what: 'Submitted claims with their progress' },
     { path: '/claims/<claim number>', what: "One claim's tracker, decision, documents and activity (only use claim numbers you were given)" },
     { path: '/notifications', what: 'All notifications' },
-    { path: '/glossary', what: 'Help and plain-English glossary of insurance terms' },
+    { path: '/glossary', what: 'Help and glossary of insurance terms' },
   ],
   ADJUSTER: [
     { path: '/queue', what: 'Work queue: all claims with filters for priority, SLA and owner' },

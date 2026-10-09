@@ -7,7 +7,7 @@ import { AiCard, Typewriter } from '../../components/ai';
 import { Alert, Button } from '../../components/ui';
 import type { CostContext } from './remittance';
 
-const STEPS = ['Ease is looking at your numbers…', 'Working out what the plan covers…', 'Putting it in plain English…'];
+const STEPS = ['Ease is looking at your numbers…', 'Working out what the plan covers…', 'Putting it together…'];
 
 /**
  * "Explain what I owe": on request, Ease explains the remittance figures in plain English. It only receives the
@@ -45,7 +45,7 @@ export function CostExplainer({ context, forProvider, projected }: { context: Co
           <Button variant="ai" size="sm" icon={Sparkles} onClick={explain}>
             {label}
           </Button>
-          <p className="min-w-0 flex-1 text-xs text-slate-500">Ease walks through these numbers in plain English.</p>
+          <p className="min-w-0 flex-1 text-xs text-slate-500">Ease walks through these numbers step by step.</p>
         </div>
         {error && (
           <Alert tone="warn" title="I couldn't explain that just now">
@@ -57,7 +57,7 @@ export function CostExplainer({ context, forProvider, projected }: { context: Co
   }
 
   return (
-    <AiCard title={forProvider ? 'What the patient owes, in plain English' : 'What you owe, in plain English'} source={result?.source} loading={busy} loadingSteps={STEPS} onRefresh={() => void explain()} className="no-print">
+    <AiCard title={forProvider ? 'What the patient owes' : 'What you owe'} source={result?.source} loading={busy} loadingSteps={STEPS} onRefresh={() => void explain()} className="no-print">
       {result && (
         <>
           <p className="text-[15px] leading-relaxed text-slate-800">

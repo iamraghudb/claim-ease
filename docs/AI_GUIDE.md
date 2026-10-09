@@ -152,3 +152,18 @@ Settings (all optional, in `.env.local`):
 - **`async` / `await`** means "wait for the server's answer without freezing the page". See `read()` in `AiScanPanel.tsx`.
 - **`services/`** is the only place the screens talk to data. `aiService.ts` talks to our AI server, the same pattern the repo already uses for claims.
 - **Tests** (`npm test`) pin the important behaviour: the AI never overwrites typed values, the assistant never sees internal notes, and the request to Google has exactly the right shape.
+
+## 8. Deploying to Vercel (free)
+
+The app is a static site plus one small serverless function (`api/ai/[...path].js`) that holds your key and talks to Google.
+
+1. Push the repo to GitHub, then on <https://vercel.com> choose **Add New, Project** and import it. Framework: Vite. No other settings.
+2. In **Settings, Environment Variables**, add `GEMINI_API_KEY` with your key (all environments). Use a **separate key made just for this**, and delete it after the hackathon. Never name it `VITE_...`.
+3. Deploy. Open `/api/ai/status` on the live URL: it should say `"configured":true`.
+
+What protects a public link (see `server/vercelHandler.ts`): a per-visitor rate limit, a same-origin check, and a fallback to clearly labelled **Demo data** if Google is busy or the free quota runs out.
+
+After changing anything in `server/`, run `npm run build:api` and commit the regenerated `api/ai/[...path].js` (Vercel runs that file as is).
+
+Limits: Vercel caps a request body at about 4.5 MB, so keep uploads small (the sample documents are far below it). Only fictional data: the free Gemini tier may use content to improve Google's products.
+

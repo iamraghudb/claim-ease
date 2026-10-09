@@ -65,7 +65,7 @@ export const TOURS: Record<Role, TourStep[]> = {
     {
       id: 'ease-summary',
       target: 'ease-summary',
-      title: 'Where you stand, in plain English',
+      title: 'Where you stand, at a glance',
       body: "I'll explain where you stand and what, if anything, you need to do.",
     },
     {

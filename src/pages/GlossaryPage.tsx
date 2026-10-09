@@ -21,7 +21,7 @@ export default function GlossaryPage() {
 
   return (
     <div>
-      <PageHeader title="Help & glossary" subtitle="Plain-English explanations of common insurance terms. Look for dotted underlines throughout the app." />
+      <PageHeader title="Help & glossary" subtitle="Clear explanations of common insurance terms. Look for dotted underlines throughout the app." />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <div className="relative w-full sm:max-w-md">

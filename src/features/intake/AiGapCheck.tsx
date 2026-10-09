@@ -49,7 +49,7 @@ export function AiGapCheck({ context }: { context: DraftContext }) {
         <AiBadge source={result?.source ?? (status.configured ? 'ai' : 'demo')} />
       </div>
       <p className="mt-1 text-sm text-slate-600">
-        Ease reads your claim the way a reviewer would and tells you, in plain English, what is missing and why it matters.
+        Ease reads your claim the way a reviewer would and tells you what is missing and why it matters.
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">

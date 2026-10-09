@@ -114,7 +114,7 @@ const ENTRIES: Entry[] = [
   {
     test: /^\/glossary/,
     title: () => 'Help and glossary',
-    summary: 'Plain-English explanations of insurance terms.',
+    summary: 'Explanations of insurance terms.',
     suggestions: ['Explain "deductible" simply', 'What is the difference between copay and coinsurance?'],
   },
 ];

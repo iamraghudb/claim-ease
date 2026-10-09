@@ -13,7 +13,7 @@ import { STANDARD_QUESTION, stableClaimContext } from './easeContext';
 /** Answers Ease has already "typed out" in this session. Coming back to the page shows them at once. */
 const typed = new Set<string>();
 
-const STEPS = ['Ease is reading your claim…', 'Checking the latest updates…', 'Putting it in plain English…'];
+const STEPS = ['Ease is reading your claim…', 'Checking the latest updates…', 'Putting it together…'];
 
 /**
  * "Where you stand": Ease's plain-English summary of one claim, written by itself the first time the page opens
